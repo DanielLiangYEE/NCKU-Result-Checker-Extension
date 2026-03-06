@@ -1,4 +1,4 @@
-# NCKU Result Checker Helper (成大一鍵查榜助手) 🎓
+# NCKU Result Checker Helper (成大查榜助手) 
 
 這是一個專為成大考生設計的 Chrome 擴充功能，旨在解決複數系所備取進度查詢繁瑣的問題。
 
