@@ -1,0 +1,14 @@
+# Mac 系統產生的雜物
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 檔案中繼資料
+Icon?
+._*
+
+# 縮圖快取
+Thumbs.db
+
+# 如果你未來有用 VS Code 開發
+.vscode/

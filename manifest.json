@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "成大一鍵查榜",
+  "version": "2.0",
+  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "host_permissions": ["https://nbk.acad.ncku.edu.tw/*"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
