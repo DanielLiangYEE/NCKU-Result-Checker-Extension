@@ -1,0 +1,503 @@
+@font-face {
+  font-family: 'Noto Sans TC';
+  src: url('fonts/NotoSansTC-Variable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --primary-color: #D1002C;
+  --bg-color: #F8F9FA;
+  /* 更具通透感的冷色調背景 */
+  --card-bg: #FFFFFF;
+  --text-primary: #1D1D1F;
+  --text-secondary: #6E6E73;
+  /* 依照 polish 規範優化的次要文字色 */
+  --accent-blue: #0071E3;
+  --border-radius: 12px;
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 1px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: fit-content;
+  min-width: 380px;
+  max-width: 600px;
+  /* 優先採用 Noto Sans TC (思源黑體)，提供極致的繁體中文視覺質感 */
+  font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  padding: 18px 20px;
+  /* 從 20px 提升至 24px，增加頂部呼吸感 */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+header {
+  margin-bottom: 18px;
+  /* 與頂部 Padding 保持絕對一致 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.version {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  /* 鎖定行高，避免造成視覺空間偏移 */
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.header-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* University Selector */
+.uni-selector {
+  margin-bottom: 12px;
+  /* <--- 大學選單與下方搜尋框的距離 */
+}
+
+/* Custom Select Wrapper */
+.custom-select {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.select-trigger {
+  padding: 12px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.select-trigger:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  background-color: #F5F5F7;
+  /* 回歸淺灰色，使其更優雅 */
+}
+
+.select-trigger .arrow {
+  width: 12px;
+  height: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: transform 0.2s ease;
+}
+
+.custom-select.active .select-trigger .arrow {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 200;
+  display: none;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.custom-select.active .select-options {
+  display: block;
+}
+
+.option {
+  padding: 12px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.option:last-child {
+  border-bottom: none;
+}
+
+.option:hover,
+.option.selected,
+.option.focused {
+  background: rgba(0, 113, 227, 0.08);
+  /* 統一使用淡藍色調 */
+  color: var(--accent-blue);
+  border-bottom-color: transparent;
+  /* 隱藏底部分隔線，使懸停色塊上下邊界一致 */
+}
+
+/* Search Area */
+.search-section {
+  display: flex;
+  gap: 12px;
+  /* 校準為 4px 倍數 */
+  margin-bottom: 16px;
+  /* 加大間距，更顯層次 */
+}
+
+.search-container {
+  position: relative;
+  flex: 1;
+}
+
+#deptSearch {
+  width: 100%;
+  padding: 12px 16px;
+  /* <--- 搜尋框內部的文字留白 (上下 左右) */
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--card-bg);
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+#deptSearch:focus {
+  border-color: var(--accent-blue);
+  /* 使用帶有模糊的陰影營造「漸淡」的霧化感 */
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.05), 0 0 12px rgba(0, 113, 227, 0.2);
+  background: #fff;
+}
+
+#addBtn {
+  background: #2C2C2E;
+  color: white;
+  border: 1.5px solid transparent;
+  padding: 0 20px;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  /* 使用 Apple 式的高高級平滑過渡 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  min-width: 72px;
+  height: 40px;
+  /* 校準為 8px 倍數 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#addBtn:active {
+  transform: scale(0.97);
+  /* 點擊時的物理反饋 */
+}
+
+#addBtn:hover {
+  background: #000000;
+}
+
+#addBtn.success {
+  background: rgba(26, 127, 55, 0.12);
+  color: #1A7F37;
+  border-color: rgba(26, 127, 55, 0.3);
+  font-size: 14px;
+  font-weight: 700;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* 加入驚喜感縮放彈跳 */
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#addBtn.shake {
+  animation: shake 0.4s ease-in-out;
+  background: #FF3B30;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+}
+
+/* Dropdown Results */
+.results-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  /* <--- 下拉搜尋結果與搜尋框的垂直距離 */
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.results-dropdown.active {
+  display: block;
+}
+
+.result-item {
+  padding: 12px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.result-item:hover,
+.result-item.focused {
+  background: rgba(0, 113, 227, 0.08);
+  /* 統一使用淡藍色調 */
+  color: var(--accent-blue);
+  border-bottom-color: transparent;
+  /* 同步底部邊界漸淡效果 */
+}
+
+/* Saved List */
+.empty-state {
+  padding: 48px 24px;
+  /* 對齊 8px 律動 */
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1.5px dashed rgba(0, 0, 0, 0.08);
+  /* 強化虛線細節 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+#listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* <--- 收藏列表每一張卡片之間的上下距離 */
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  /* <--- 科系卡片內部的四周留白 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-subtle);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
+  border: 1px solid transparent;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  /* 輕微上浮感 */
+  box-shadow: var(--shadow-hover);
+  /* 懸停時投影加深，營造懸浮層次 */
+}
+
+.dept-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* <--- 標籤與科系名稱之間的距離 */
+  min-width: 0;
+}
+
+.uni-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 6px 5px 6px;
+  /* 視覺修正：減少上方 Padding 並微調下方，抵消中文字體重心偏下的問題 */
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  /* 鎖定行高，確保在標籤框內保持絕對居中 */
+}
+
+.dept-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  /* <--- 「查詢」按鈕與「垃圾桶」圖示之間的距離 */
+  align-items: center;
+}
+
+.btn-search {
+  background: none;
+  color: var(--accent-blue);
+  border: none;
+  padding: 0 8px;
+  /* 縮小左右邊距 */
+  height: 28px;
+  /* 統一縮小到 28px */
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-search:active {
+  transform: scale(0.96);
+  /* 點擊時的碎按壓感 */
+}
+
+.btn-search:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  /* 與垃圾桶一樣的懸停背景色，但保留矩形形狀 */
+}
+
+.btn-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 28px;
+  /* 與高度相同，構成正方形 */
+  height: 28px;
+  /* 統一縮小到 28px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  border-radius: 8px;
+}
+
+.btn-del img {
+  width: 16px;
+  /* 圖示微縮至 16px 更顯精緻 */
+  height: 16px;
+  object-fit: contain;
+}
+
+.btn-del:active {
+  transform: scale(0.96);
+  /* 補齊垃圾桶的點擊感 */
+}
+
+.btn-del:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer */
+footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+footer .copyright {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  font-weight: 400;
+}

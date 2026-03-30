@@ -1,289 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
+
 <head>
   <meta charset="utf-8">
-  <style>
-    /* 1. 把寬度增加到 500px，高度設為 auto 讓它根據內容長高 */
-    body { 
-      width: 500px; 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; 
-      padding: 15px; 
-      background: #f9f9f9; 
-      margin: 0;
-    }
-    
-    h3 { color: #d1002c; margin-top: 0; display: flex; align-items: center; gap: 8px; }
-    
-    .control-group { 
-      display: flex; 
-      gap: 8px; 
-      margin-bottom: 15px; 
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    /* 2. 讓下拉選單寬度更彈性 */
-    select { 
-      flex: 1; 
-      padding: 8px; 
-      border-radius: 4px; 
-      border: 1px solid #ccc; 
-      font-size: 14px;
-      max-width: 380px; /* 限制最大寬度防止撐爆 */
-    }
-
-    #addBtn { 
-      background: #28a745; 
-      color: white; 
-      border: none; 
-      padding: 8px 15px; 
-      border-radius: 4px; 
-      cursor: pointer; 
-      white-space: nowrap; /* 確保按鈕文字不換行 */
-    }
-
-    /* 3. 優化列表卡片，讓長文字自動換行 */
-    .card { 
-      background: white; 
-      border: 1px solid #eee; 
-      padding: 12px; 
-      margin-bottom: 10px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      border-radius: 8px; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .dept-name { 
-      font-size: 14px; 
-      line-height: 1.4;
-      padding-right: 15px;
-      word-break: break-all; /* 強制長字換行 */
-      flex: 1; /* 佔滿剩餘空間 */
-    }
-
-    .button-group {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 0; /* 防止按鈕被壓扁 */
-    }
-
-    .btn-search { background: #d1002c; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-del { background: none; border: none; color: #bbb; cursor: pointer; font-size: 16px; padding: 5px; }
-    .btn-del:hover { color: #ff4d4d; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>115 碩士班考試 查榜助手</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
-  <h3>🎓 成大115碩班考試查榜助手</h3>
-  <div class="control-group">
-    <select id="deptSelect">
-        <option value="371">[文學院]中國文學系中國文學碩士班甲組[371]</option>
-        <option value="372">[文學院]中國文學系中國文學碩士班乙組[372]</option>
-        <option value="373">[文學院]中國文學系現代文學碩士班[373]</option>
-        <option value="381">[文學院]外國語文學系甲組[381]</option>
-        <option value="382">[文學院]外國語文學系乙組[382]</option>
-        <option value="390">[文學院]歷史學系[390]</option>
-        <option value="400">[文學院]藝術研究所[400]</option>
-        <option value="410">[文學院]台灣文學系[410]</option>
-        <option value="411">[文學院]台灣文學系在職專班一般在職組[411]</option>
-        <option value="412">[文學院]台灣文學系在職專班教師在職組[412]</option>
-        <option value="120">[文學院]考古學研究所[120]</option>
-        <option value="200">[文學院]戲劇碩士學位學程[200]</option>
-        <hr>
-        <option value="420">[理學院]數學系應用數學碩士班[420]</option>
-        <option value="430">[理學院]物理學系[430]</option>
-        <option value="440">[理學院]光電科學與工程學系[440]</option>
-        <option value="450">[理學院]化學系[450]</option>
-        <option value="461">[理學院]地球科學系甲組[461]</option>
-        <option value="462">[理學院]地球科學系乙組[462]</option>
-        <option value="463">[理學院]地球科學系在職專班[463]</option>
-        <option value="330">[理學院]太空與電漿科學研究所[330]</option>
-        <hr>
-        <option value="471">[生科院]生命科學系甲組[471]</option>
-        <option value="472">[生科院]生命科學系乙組[472]</option>
-        <option value="473">[生科院]生命科學系丙組[473]</option>
-        <option value="480">[生科院]生物科技與產業科學系[480]</option>
-        <option value="160">[生科院]熱帶植物與微生物科學研究所[160]</option>
-        <hr>
-        <option value="500">[工學院]工學院工程管理在職專班[500]</option>
-        <option value="511">[工學院]機械工程學系甲組[511]</option>
-        <option value="512">[工學院]機械工程學系乙組[512]</option>
-        <option value="513">[工學院]機械工程學系丙組[513]</option>
-        <option value="514">[工學院]機械工程學系丁組[514]</option>
-        <option value="515">[工學院]機械工程學系戊組[515]</option>
-        <option value="551">[工學院]化學工程學系甲組[551]</option>
-        <option value="552">[工學院]化學工程學系乙組[552]</option>
-        <option value="561">[工學院]資源工程學系甲組[561]</option>
-        <option value="562">[工學院]資源工程學系乙組[562]</option>
-        <option value="563">[工學院]資源工程學系丙組[563]</option>
-        <option value="571">[工學院]材料科學及工程學系碩士班[571]</option>
-        <option value="572">[工學院]材料科學及工程學系綠色應用材料碩士班[572]</option>
-        <option value="581">[工學院]土木工程學系甲組[581]</option>
-        <option value="582">[工學院]土木工程學系乙組[582]</option>
-        <option value="583">[工學院]土木工程學系丙組[583]</option>
-        <option value="584">[工學院]土木工程學系丁組[584]</option>
-        <option value="585">[工學院]土木工程學系戊組[585]</option>
-        <option value="586">[工學院]土木工程學系在職專班[586]</option>
-        <option value="601">[工學院]水利及海洋工程學系甲組[601]</option>
-        <option value="602">[工學院]水利及海洋工程學系乙組[602]</option>
-        <option value="603">[工學院]水利及海洋工程學系在職專班[603]</option>
-        <option value="280">[工學院]海洋科技與事務研究所[280]</option>
-        <option value="611">[工學院]工程科學系甲組[611]</option>
-        <option value="612">[工學院]工程科學系乙組[612]</option>
-        <option value="613">[工學院]工程科學系丙組[613]</option>
-        <option value="614">[工學院]工程科學系丁組[614]</option>
-        <option value="615">[工學院]工程科學系戊組[615]</option>
-        <option value="616">[工學院]工程科學系己組[616]</option>
-        <option value="617">[工學院]工程科學系在職專班甲組[617]</option>
-        <option value="618">[工學院]工程科學系在職專班乙組[618]</option>
-        <option value="619">[工學院]工程科學系在職專班丙組[619]</option>
-        <option value="621">[工學院]系統及船舶機電工程學系甲組[621]</option>
-        <option value="622">[工學院]系統及船舶機電工程學系乙組[622]</option>
-        <option value="623">[工學院]系統及船舶機電工程學系丙組[623]</option>
-        <option value="624">[工學院]系統及船舶機電工程學系丁組[624]</option>
-        <option value="651">[工學院]航空太空工程學系甲組[651]</option>
-        <option value="652">[工學院]航空太空工程學系乙組[652]</option>
-        <option value="653">[工學院]航空太空工程學系丙組[653]</option>
-        <option value="654">[工學院]航空太空工程學系丁組[654]</option>
-        <option value="655">[工學院]航空太空工程學系在職專班[655]</option>
-        <option value="350">[工學院]民航研究所[350]</option>
-        <option value="671">[工學院]環境工程學系甲組[671]</option>
-        <option value="672">[工學院]環境工程學系乙組[672]</option>
-        <option value="680">[工學院]測量及空間資訊學系[680]</option>
-        <option value="701">[工學院]生物醫學工程學系甲組[701]</option>
-        <option value="702">[工學院]生物醫學工程學系乙組[702]</option>
-        <option value="703">[工學院]生物醫學工程學系丙組[703]</option>
-        <option value="704">[工學院]生物醫學工程學系醫療器材創新國際碩士班丁組[704]</option>
-        <option value="150">[工學院]自然災害減災及管理國際碩士學位學程[150]</option>
-        <option value="210">[工學院]能源工程國際碩士學位學程[210]</option>
-        <option value="180">[工學院]太空系統工程研究所[180]</option>
-        <hr>
-        <option value="521">[電資學院]電機工程學系甲組[521]</option>
-        <option value="522">[電資學院]電機工程學系乙組[522]</option>
-        <option value="523">[電資學院]電機工程學系丙組[523]</option>
-        <option value="524">[電資學院]電機工程學系丁組[524]</option>
-        <option value="525">[電資學院]電機工程學系戊組[525]</option>
-        <option value="526">[電資學院]電機工程學系己組[526]</option>
-        <option value="527">[電資學院]電機工程學系在職專班[527]</option>
-        <option value="541">[電資學院]通訊工程研究所甲組[541]</option>
-        <option value="542">[電資學院]通訊工程研究所乙組[542]</option>
-        <option value="711">[電資學院]製造資訊與系統研究所甲組[711]</option>
-        <option value="712">[電資學院]製造資訊與系統研究所乙組[712]</option>
-        <option value="713">[電資學院]製造資訊與系統研究所丙組[713]</option>
-        <option value="140">[電資學院]智慧資訊安全碩士學位學程[140]</option>
-        <option value="530">[電資學院]微電子工程研究所[530]</option>
-        <option value="130">[電資學院]奈米積體電路工程碩士學位學程[130]</option>
-        <option value="690">[電資學院]資訊工程學系[690]</option>
-        <option value="693">[電資學院]資訊工程學系人工智慧與資訊系統碩士在職專班[693]</option>
-        <option value="270">[電資學院]醫學資訊研究所[270]</option>
-        <option value="070">[電資學院]人工智慧科技碩士學位學程[070]</option>
-        <hr>
-        <option value="591">[規劃學院]建築學系甲組[591]</option>
-        <option value="592">[規劃學院]建築學系乙組[592]</option>
-        <option value="593">[規劃學院]建築學系丙組[593]</option>
-        <option value="594">[規劃學院]建築學系丁組[594]</option>
-        <option value="595">[規劃學院]建築學系戊組[595]</option>
-        <option value="596">[規劃學院]建築學系己組[596]</option>
-        <option value="598">[規劃學院]建築學系在職專班[598]</option>
-        <option value="631">[規劃學院]都巿計劃學系甲組[631]</option>
-        <option value="641">[規劃學院]工業設計學系甲組[641]</option>
-        <option value="642">[規劃學院]工業設計學系乙組[642]</option>
-        <option value="643">[規劃學院]工業設計學系在職專班[643]</option>
-        <option value="261">[規劃學院]創意產業設計研究所甲組[261]</option>
-        <option value="262">[規劃學院]創意產業設計研究所乙組[262]</option>
-        <option value="263">[規劃學院]創意產業設計研究所丙組[263]</option>
-        <option value="110">[規劃學院]科技藝術碩士學位學程[110]</option>
-        <hr>
-        <option value="190">[管理學院]國際經營管理研究所在職專班[190]</option>
-        <option value="730">[管理學院]會計學系[730]</option>
-        <option value="740">[管理學院]財務金融研究所[740]</option>
-        <option value="741">[管理學院]財務金融研究所在職專班[741]</option>
-        <option value="750">[管理學院]統計與資料科學學系[750]</option>
-        <option value="761">[管理學院]工業與資訊管理學系甲組[761]</option>
-        <option value="762">[管理學院]工業與資訊管理學系乙組[762]</option>
-        <option value="764">[管理學院]工業與資訊管理學系在職專班[764]</option>
-        <option value="771">[管理學院]資訊管理研究所甲組[771]</option>
-        <option value="772">[管理學院]資訊管理研究所乙組[772]</option>
-        <option value="781">[管理學院]企業管理學系甲組[781]</option>
-        <option value="782">[管理學院]企業管理學系乙組[782]</option>
-        <option value="783">[管理學院]企業管理學系丙組[783]</option>
-        <option value="785">[管理學院]企業管理學系在職專班[785]</option>
-        <option value="790">[管理學院]國際企業研究所[790]</option>
-        <option value="801">[管理學院]交通管理科學系甲組[801]</option>
-        <option value="802">[管理學院]交通管理科學系乙組[802]</option>
-        <option value="803">[管理學院]交通管理科學系丙組[803]</option>
-        <option value="805">[管理學院]交通管理科學系在職專班[805]</option>
-        <option value="810">[管理學院]電信管理研究所[810]</option>
-        <option value="251">[管理學院]體育健康與休閒研究所甲組[251]</option>
-        <option value="252">[管理學院]體育健康與休閒研究所乙組[252]</option>
-        <option value="253">[管理學院]體育健康與休閒研究所運動健康與休閒管理在職專班[253]</option>
-        <option value="090">[管理學院]數據科學研究所[090]</option>
-        <hr>
-        <option value="820">[醫學院]生物化學暨分子生物學研究所[820]</option>
-        <option value="830">[醫學院]生理學研究所[830]</option>
-        <option value="840">[醫學院]藥理學研究所[840]</option>
-        <option value="851">[醫學院]微生物及免疫學研究所甲組[851]</option>
-        <option value="852">[醫學院]微生物及免疫學研究所乙組[852]</option>
-        <option value="853">[醫學院]微生物及免疫學研究所丙組[853]</option>
-        <option value="861">[醫學院]臨床藥學與藥物科技研究所甲組[861]</option>
-        <option value="862">[醫學院]臨床藥學與藥物科技研究所乙組[862]</option>
-        <option value="863">[醫學院]臨床藥學與藥物科技研究所丙組[863]</option>
-        <option value="871">[醫學院]環境醫學研究所甲組[871]</option>
-        <option value="872">[醫學院]環境醫學研究所乙組[872]</option>
-        <option value="873">[醫學院]環境醫學研究所丙組[873]</option>
-        <option value="880">[醫學院]行為醫學研究所[880]</option>
-        <option value="890">[醫學院]分子醫學研究所[890]</option>
-        <option value="901">[醫學院]護理學系甲組[901]</option>
-        <option value="902">[醫學院]護理學系乙組[902]</option>
-        <option value="903">[醫學院]護理學系丙組[903]</option>
-        <option value="904">[醫學院]護理學系丁組[904]</option>
-        <option value="906">[醫學院]護理學系專科護理師碩士在職專班[906]</option>
-        <option value="910">[醫學院]醫學檢驗生物技術學系[910]</option>
-        <option value="920">[醫學院]物理治療學系[920]</option>
-        <option value="930">[醫學院]職能治療學系[930]</option>
-        <option value="940">[醫學院]細胞生物與解剖學研究所[940]</option>
-        <option value="950">[醫學院]公共衛生學系[950]</option>
-        <option value="951">[醫學院]公共衛生學系碩士在職專班[951]</option>
-        <option value="961">[醫學院]口腔醫學研究所甲組[961]</option>
-        <option value="962">[醫學院]口腔醫學研究所乙組[962]</option>
-        <option value="963">[醫學院]口腔醫學研究所丙組[963]</option>
-        <option value="340">[醫學院]臨床醫學研究所[340]</option>
-        <option value="341">[醫學院]臨床醫學研究所在職專班甲組[341]</option>
-        <option value="342">[醫學院]臨床醫學研究所在職專班乙組[342]</option>
-        <option value="343">[醫學院]臨床醫學研究所在職專班丙組[343]</option>
-        <option value="171">[醫學院]老年學研究所甲組[171]</option>
-        <option value="172">[醫學院]老年學研究所乙組[172]</option>
-        <option value="360">[醫學院]食品安全衛生暨風險管理研究所[360]</option>
-        <hr>
-        <option value="970">[社科院]政治學系政治經濟學碩士班[970]</option>
-        <option value="971">[社科院]政治學系政治經濟學碩士在職專班[971]</option>
-        <option value="240">[社科院]經濟學系[240]</option>
-        <option value="980">[社科院]教育研究所[980]</option>
-        <option value="231">[社科院]心理學系甲組[231]</option>
-        <option value="232">[社科院]心理學系乙組[232]</option>
-        <option value="991">[社科院]法律學系甲組[991]</option>
-        <option value="992">[社科院]法律學系乙組[992]</option>
-        <option value="993">[社科院]法律學系丙組[993]</option>
-        <option value="994">[社科院]法律學系丁組[994]</option>
-        <option value="995">[社科院]法律學系在職專班甲組[995]</option>
-        <option value="996">[社科院]法律學系在職專班乙組[996]</option>
-        <hr>
-        <option value="490">[敏求智慧]智慧科技系統碩士學位學程[490]</option>
-        <option value="030">[敏求智慧]智慧運算碩士學位學程[030]</option>
-        <option value="010">[教務處學]全校永續跨域國際碩士學位學程[010]</option>
-        <option value="5A0">[智慧半導]晶片設計碩士學位學程[5A0]</option>
-        <option value="5B0">[智慧半導]半導體製程碩士學位學程[5B0]</option>
-        <option value="5C0">[智慧半導]半導體封測碩士學位學程[5C0]</option>
-        <option value="5D0">[智慧半導]關鍵材料碩士學位學程[5D0]</option>
-        <option value="5E0">[智慧半導]智慧與永續製造碩士學位學程[5E0]</option>
-    </select>
+  <header>
+    <h1><img src="icons/icon128.png" class="header-icon" alt="Logo"> 115 碩士班考試 查榜助手</h1>
+    <span class="version">v1.0</span>
+  </header>
+
+  <section class="uni-selector">
+    <div class="custom-select" id="uniSelector">
+      <div class="select-trigger" tabindex="0">
+        <span id="currentUniName">台灣大學 (NTU)</span>
+        <span class="arrow"></span>
+      </div>
+      <div class="select-options" id="uniOptions">
+        <div class="option" data-value="ntu">台灣大學 (NTU)</div>
+        <div class="option" data-value="ncku">成功大學 (NCKU)</div>
+        <div class="option" data-value="nsysu">中山大學 (NSYSU)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="search-section">
+    <div class="search-container">
+      <input type="text" id="deptSearch" placeholder="搜尋所名名稱或代碼...">
+      <div id="searchResults" class="results-dropdown"></div>
+    </div>
     <button id="addBtn">新增</button>
-  </div>
-  <div id="listContainer"></div>
-  <script src="popup.js"></script>
+  </section>
+
+  <section class="saved-section">
+    <div id="listContainer">
+      <!-- List items injected by JS -->
+    </div>
+  </section>
+
+  <script type="module" src="popup.js"></script>
+  <footer>
+    <span class="copyright">© 2026 DYEE. All Rights Reserved.</span>
+  </footer>
 </body>
+
 </html>

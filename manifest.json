@@ -1,9 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "成大一鍵查榜",
+  "name": "115 碩士班考試 查榜助手",
   "version": "2.0",
   "permissions": ["activeTab", "scripting", "tabs", "storage"],
-  "host_permissions": ["https://nbk.acad.ncku.edu.tw/*"],
+  "host_permissions": [
+    "https://nbk.acad.ncku.edu.tw/*",
+    "*://*.ntu.edu.tw/*",
+    "https://exam2-acad.nsysu.edu.tw/*"
+  ],
+  "icons": {
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html"
   },
