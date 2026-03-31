@@ -1,6 +1,6 @@
 import { UNIVERSITY_DATA } from './data.js';
 
-const elements = {
+const el = {
   uniSelector: document.getElementById('uniSelector'),
   currentUniName: document.getElementById('currentUniName'),
   uniOptions: document.getElementById('uniOptions'),
@@ -8,396 +8,253 @@ const elements = {
   deptSearch: document.getElementById('deptSearch'),
   searchResults: document.getElementById('searchResults'),
   addBtn: document.getElementById('addBtn'),
-  listContainer: document.getElementById('listContainer')
+  listContainer: document.getElementById('listContainer'),
+  loadingOverlay: document.getElementById('loadingOverlay')
 };
 
 let currentUni = 'ntu';
 let selectedDept = null;
-let focusedIndex = -1;
-let uniFocusedIndex = -1; // 追蹤大學選單的鍵盤選取
-let currentResults = [];
+let fIdx = -1;
+let uFIdx = -1;
+let results = [];
 
-// Initialize
-function init() {
-  chrome.storage.local.get(['lastUni'], (data) => {
-    if (data.lastUni) {
-      currentUni = data.lastUni;
-      updateUniUI(currentUni);
-    }
-    renderSavedList();
-  });
-
-  const uniTrigger = elements.uniSelector.querySelector('.select-trigger');
-
-  // Toggle Uni Selector
-  uniTrigger.onclick = () => toggleUniSelector();
-
-  // University Keyboard Navigation
-  uniTrigger.addEventListener('keydown', (e) => {
-    const isActive = elements.uniSelector.classList.contains('active');
-
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      if (!isActive) {
-        toggleUniSelector();
-      } else {
-        confirmUniSelection();
-      }
-    } else if (e.key === 'ArrowDown' && isActive) {
-      e.preventDefault();
-      moveUniFocus(1);
-    } else if (e.key === 'ArrowUp' && isActive) {
-      e.preventDefault();
-      moveUniFocus(-1);
-    } else if (e.key === 'Escape' && isActive) {
-      elements.uniSelector.classList.remove('active');
-      uniFocusedIndex = -1;
-      updateUniFocusUI();
-    }
-  });
-
-  elements.uniOptions.querySelectorAll('.option').forEach((opt, idx) => {
-    opt.onclick = () => {
-      selectUniversity(opt.dataset.value);
-    };
-  });
-
-  // Search Logic
-  elements.deptSearch.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    selectedDept = null;
-    if (!query) {
-      hideResults();
-      return;
-    }
-    showResults(query);
-  });
-
-  elements.deptSearch.addEventListener('keydown', (e) => {
-    if (e.isComposing) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      moveFocus(1);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      moveFocus(-1);
-    } else if (e.key === 'Enter') {
-      if (focusedIndex >= 0 && focusedIndex < currentResults.length) {
-        const dept = currentResults[focusedIndex];
-        selectDept(dept);
-        handleAdd();
-      } else {
-        handleAdd();
-      }
-    }
-  });
-
-  elements.addBtn.addEventListener('click', handleAdd);
-
-  document.addEventListener('click', (e) => {
-    if (!elements.searchContainer?.contains(e.target)) {
-      hideResults();
-    }
-    if (!elements.uniSelector?.contains(e.target)) {
-      elements.uniSelector.classList.remove('active');
-      uniFocusedIndex = -1;
-      updateUniFocusUI();
-    }
-  });
-}
-
-function toggleUniSelector() {
-  const isActive = elements.uniSelector.classList.toggle('active');
-  if (isActive) {
-    // 預設高亮當前選中的大學
-    const options = Array.from(elements.uniOptions.querySelectorAll('.option'));
-    uniFocusedIndex = options.findIndex(opt => opt.dataset.value === currentUni);
-    updateUniFocusUI();
+// --- Utils ---
+const cleanName = (t) => t.replace(/^\[[^\]]+\]/, '').replace(/^[0-9A-Z]+\s*/, '').replace(/\[\w+\]$/, '');
+const showLoading = (s) => el.loadingOverlay.classList.toggle('active', s);
+const showBtnFeedback = (type) => {
+  const original = el.addBtn.textContent;
+  if (type === 'success') {
+    el.addBtn.textContent = '✓';
+    el.addBtn.classList.add('success');
+    setTimeout(() => { el.addBtn.textContent = original; el.addBtn.classList.remove('success'); }, 1000);
   } else {
-    uniFocusedIndex = -1;
-    updateUniFocusUI();
+    el.addBtn.classList.add('shake');
+    setTimeout(() => el.addBtn.classList.remove('shake'), 400);
   }
-}
+};
 
-function moveUniFocus(delta) {
-  const options = elements.uniOptions.querySelectorAll('.option');
-  uniFocusedIndex += delta;
-  // 改為「碰撞邊界」模式，不再循環
-  if (uniFocusedIndex < 0) uniFocusedIndex = 0;
-  if (uniFocusedIndex >= options.length) uniFocusedIndex = options.length - 1;
-  updateUniFocusUI();
-}
+// --- Core Logic ---
+const init = () => {
+  chrome.storage.local.get(['lastUni'], (d) => {
+    if (d.lastUni) { currentUni = d.lastUni; updateUniUI(currentUni); }
+    renderList();
+  });
 
-function updateUniFocusUI() {
-  const options = elements.uniOptions.querySelectorAll('.option');
-  options.forEach((opt, idx) => {
-    if (idx === uniFocusedIndex) {
-      opt.classList.add('focused');
-      opt.scrollIntoView({ block: 'nearest' });
-    } else {
-      opt.classList.remove('focused');
+  const uniTrigger = el.uniSelector.querySelector('.select-trigger');
+  uniTrigger.onclick = () => toggleUni();
+
+  uniTrigger.onkeydown = (e) => {
+    const active = el.uniSelector.classList.contains('active');
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); active ? confirmUni() : toggleUni(true); }
+    else if (e.key === 'ArrowDown' && active) { e.preventDefault(); moveUniFocus(1); }
+    else if (e.key === 'ArrowUp' && active) { e.preventDefault(); moveUniFocus(-1); }
+    else if (e.key === 'Escape') toggleUni(false);
+  };
+
+  el.uniOptions.querySelectorAll('.option').forEach(opt => opt.onclick = () => selectUni(opt.dataset.value));
+
+  el.deptSearch.oninput = (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    selectedDept = null;
+    q ? showResults(q) : hideResults();
+  };
+
+  el.deptSearch.onkeydown = (e) => {
+    if (e.isComposing) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
+    else if (e.key === 'Enter') handleAdd();
+  };
+
+  el.addBtn.onclick = handleAdd;
+
+  document.onclick = (e) => {
+    if (!el.searchContainer.contains(e.target)) hideResults();
+    if (!el.uniSelector.contains(e.target)) toggleUni(false);
+  };
+
+  chrome.runtime.onMessage.addListener((m) => {
+    if (m.action === "searching_complete") {
+      el.loadingOverlay.classList.add('success');
+      setTimeout(() => {
+        showLoading(false);
+        el.loadingOverlay.classList.remove('success');
+      }, 500);
     }
   });
-}
+};
 
-function confirmUniSelection() {
-  const options = elements.uniOptions.querySelectorAll('.option');
-  if (uniFocusedIndex >= 0 && uniFocusedIndex < options.length) {
-    selectUniversity(options[uniFocusedIndex].dataset.value);
-  }
-}
+const toggleUni = (s) => {
+  const active = typeof s === 'boolean' ? s : el.uniSelector.classList.toggle('active');
+  el.uniSelector.classList.toggle('active', active);
+  if (active) {
+    const opts = Array.from(el.uniOptions.querySelectorAll('.option'));
+    uFIdx = opts.findIndex(o => o.dataset.value === currentUni);
+    updateUniFocusUI();
+  } else uFIdx = -1;
+};
 
-function selectUniversity(val) {
+const moveUniFocus = (d) => {
+  const max = el.uniOptions.querySelectorAll('.option').length - 1;
+  uFIdx = Math.max(0, Math.min(max, uFIdx + d));
+  updateUniFocusUI();
+};
+
+const updateUniFocusUI = () => {
+  el.uniOptions.querySelectorAll('.option').forEach((o, i) => {
+    o.classList.toggle('focused', i === uFIdx);
+    if (i === uFIdx) o.scrollIntoView({ block: 'nearest' });
+  });
+};
+
+const confirmUni = () => {
+  const opts = el.uniOptions.querySelectorAll('.option');
+  if (uFIdx >= 0 && uFIdx < opts.length) selectUni(opts[uFIdx].dataset.value);
+};
+
+const selectUni = (val) => {
   currentUni = val;
   updateUniUI(val);
-  chrome.storage.local.set({ lastUni: currentUni });
-  elements.deptSearch.value = '';
+  chrome.storage.local.set({ lastUni: val });
+  el.deptSearch.value = '';
   hideResults();
-  elements.uniSelector.classList.remove('active');
-  uniFocusedIndex = -1;
-  updateUniFocusUI();
-  renderSavedList();
-}
+  toggleUni(false);
+  renderList();
+};
 
-function updateUniUI(uniId) {
-  const uniCfg = UNIVERSITY_DATA[uniId];
-  elements.currentUniName.textContent = `${uniCfg.name} (${uniId.toUpperCase()})`;
-  elements.uniOptions.querySelectorAll('.option').forEach(opt => {
-    if (opt.dataset.value === uniId) {
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
+const updateUniUI = (id) => {
+  const cfg = UNIVERSITY_DATA[id];
+  el.currentUniName.textContent = `${cfg.name} (${id.toUpperCase()})`;
+  el.uniOptions.querySelectorAll('.option').forEach(o => o.classList.toggle('selected', o.dataset.value === id));
+};
+
+const showResults = (q) => {
+  const depts = UNIVERSITY_DATA[currentUni].depts;
+  results = depts.filter(d => d.text.toLowerCase().includes(q) || d.val.toLowerCase().includes(q))
+    .sort((a, b) => {
+      const at = cleanName(a.text).toLowerCase(), bt = cleanName(b.text).toLowerCase();
+      const as = at.startsWith(q), bs = bt.startsWith(q);
+      return as !== bs ? (as ? -1 : 1) : at.length - bt.length;
+    }).slice(0, 30);
+
+  if (!results.length) return hideResults();
+  fIdx = -1;
+  el.searchResults.innerHTML = results.map(d => `<div class="result-item">${cleanName(d.text)}</div>`).join('');
+  el.searchResults.querySelectorAll('.result-item').forEach((item, idx) => {
+    item.onmousedown = (e) => e.preventDefault();
+    item.onclick = () => { el.deptSearch.value = cleanName(results[idx].text); selectedDept = results[idx]; hideResults(); el.deptSearch.focus(); };
   });
-}
+  el.searchResults.classList.add('active');
+};
 
-function moveFocus(delta) {
-  if (currentResults.length === 0) return;
-  focusedIndex += delta;
-  // 改為「碰撞邊界」模式，不再循環
-  if (focusedIndex < 0) focusedIndex = 0;
-  if (focusedIndex >= currentResults.length) focusedIndex = currentResults.length - 1;
-  updateFocusUI();
-}
+const hideResults = () => { el.searchResults.classList.remove('active'); results = []; fIdx = -1; };
 
-function updateFocusUI() {
-  const items = elements.searchResults.querySelectorAll('.result-item');
-  items.forEach((item, idx) => {
-    if (idx === focusedIndex) {
-      item.classList.add('focused');
-      item.scrollIntoView({ block: 'nearest' });
-    } else {
-      item.classList.remove('focused');
-    }
+const moveFocus = (d) => {
+  if (!results.length) return;
+  fIdx = Math.max(0, Math.min(results.length - 1, fIdx + d));
+  el.searchResults.querySelectorAll('.result-item').forEach((o, i) => {
+    o.classList.toggle('focused', i === fIdx);
+    if (i === fIdx) o.scrollIntoView({ block: 'nearest' });
   });
-}
+};
 
-function selectDept(dept) {
-  elements.deptSearch.value = cleanDeptName(dept.text);
-  selectedDept = dept;
-  hideResults();
-  elements.deptSearch.focus();
-}
-
-async function handleAdd() {
+const handleAdd = async () => {
   if (!selectedDept) {
-    const query = elements.deptSearch.value.toLowerCase().trim();
-    if (query) {
-      const deptToUse = (focusedIndex >= 0) ? currentResults[focusedIndex] : currentResults[0];
-      if (deptToUse) {
-        selectedDept = deptToUse;
-      } else {
-        const depts = UNIVERSITY_DATA[currentUni].depts;
-        const filtered = depts.filter(d =>
-          d.text.toLowerCase().includes(query) || d.val.toLowerCase().includes(query)
-        );
-        if (filtered.length > 0) selectedDept = filtered[0];
-      }
-    }
+    const q = el.deptSearch.value.trim();
+    if (q) selectedDept = results[fIdx >= 0 ? fIdx : 0] || UNIVERSITY_DATA[currentUni].depts.find(d => cleanName(d.text).includes(q));
   }
-
   if (selectedDept) {
-    const isSuccess = await saveDept(selectedDept);
-    if (isSuccess) {
-      elements.deptSearch.value = '';
-      selectedDept = null;
-      hideResults();
-      showBtnFeedback('success');
-    } else {
-      showBtnFeedback('shake');
-    }
+    const key = `savedDepts_${currentUni}`;
+    chrome.storage.local.get([key], (d) => {
+      const list = d[key] || [];
+      if (!list.find(o => o.val === selectedDept.val)) {
+        list.push(selectedDept);
+        chrome.storage.local.set({ [key]: list }, () => {
+          renderList();
+          el.deptSearch.value = '';
+          selectedDept = null;
+          hideResults(); // 新增成功後自動收合列表
+          showBtnFeedback('success');
+        });
+      } else {
+        hideResults(); // 即使重複也收合列表，並給予視覺提示
+        showBtnFeedback('shake');
+      }
+    });
   } else {
     showBtnFeedback('shake');
   }
-}
+};
 
-function showBtnFeedback(type) {
-  const originalText = elements.addBtn.textContent;
-  if (type === 'success') {
-    elements.addBtn.textContent = '✓';
-    elements.addBtn.classList.add('success');
-    setTimeout(() => {
-      elements.addBtn.textContent = originalText;
-      elements.addBtn.classList.remove('success');
-    }, 1000);
-  } else if (type === 'shake') {
-    elements.addBtn.classList.add('shake');
-    setTimeout(() => elements.addBtn.classList.remove('shake'), 400);
-  }
-}
+let isInitialRender = true;
+let lastListKeys = new Set();
 
-function cleanDeptName(text) {
-  return text.replace(/^\[[^\]]+\]/, '')
-    .replace(/^[0-9A-Z]+\s*/, '')
-    .replace(/\[\w+\]$/, '');
-}
-
-function showResults(query) {
-  const depts = UNIVERSITY_DATA[currentUni].depts;
-
-  // 1. 先選出所有符合條件的科系
-  const allMatches = depts.filter(d =>
-    d.text.toLowerCase().includes(query) || d.val.toLowerCase().includes(query)
-  );
-
-  // 2. 智慧排序：開頭匹配 > 文字包含
-  allMatches.sort((a, b) => {
-    const aText = cleanDeptName(a.text).toLowerCase();
-    const bText = cleanDeptName(b.text).toLowerCase();
-    const aStarts = aText.startsWith(query);
-    const bStarts = bText.startsWith(query);
-
-    if (aStarts && !bStarts) return -1;
-    if (!aStarts && bStarts) return 1;
-    return aText.length - bText.length; // 短的優先 (通常較精準)
-  });
-
-  // 3. 擴展上限至 30 個
-  currentResults = allMatches.slice(0, 30);
-
-  if (currentResults.length === 0) {
-    hideResults();
-    return;
-  }
-
-  focusedIndex = -1;
-  elements.searchResults.innerHTML = '';
-  currentResults.forEach((dept, idx) => {
-    const item = document.createElement('div');
-    item.className = 'result-item';
-    item.textContent = cleanDeptName(dept.text);
-    item.onmousedown = (e) => e.preventDefault();
-    item.onclick = () => selectDept(dept);
-    elements.searchResults.appendChild(item);
-  });
-  elements.searchResults.classList.add('active');
-}
-
-function hideResults() {
-  elements.searchResults.classList.remove('active');
-  currentResults = [];
-  focusedIndex = -1;
-}
-
-function saveDept(dept) {
-  return new Promise((resolve) => {
-    const key = `savedDepts_${currentUni}`;
-    chrome.storage.local.get([key], (data) => {
-      let list = data[key] || [];
-      if (!list.find(d => d.val === dept.val)) {
-        list.push(dept);
-        chrome.storage.local.set({ [key]: list }, () => {
-          renderSavedList();
-          resolve(true);
-        });
-      } else {
-        resolve(false);
-      }
-    });
-  });
-}
-
-function renderSavedList() {
-  chrome.storage.local.get(null, (allData) => {
-    let combinedList = [];
-    Object.keys(UNIVERSITY_DATA).forEach(uniId => {
-      const uniCfg = UNIVERSITY_DATA[uniId];
-      const savedKey = `savedDepts_${uniId}`;
-      const savedItems = allData[savedKey] || [];
-      savedItems.forEach(item => {
-        combinedList.push({
-          ...item,
-          uniId: uniId,
-          uniCfg: uniCfg
-        });
-      });
+const renderList = () => {
+  chrome.storage.local.get(null, (all) => {
+    const list = [];
+    Object.keys(UNIVERSITY_DATA).forEach(id => {
+      const items = all[`savedDepts_${id}`] || [];
+      items.forEach(o => list.push({ ...o, uniId: id, uni: UNIVERSITY_DATA[id], key: `${id}_${o.val}` }));
     });
 
-    elements.listContainer.innerHTML = '';
-    if (combinedList.length === 0) {
-      elements.listContainer.innerHTML = `
+    if (!list.length) {
+      el.listContainer.innerHTML = `
         <div class="empty-state">
-          <img src="icons/empty_folder.png" style="width: 35px; height: 35px; margin-bottom: 8px; opacity: 0.5; filter: grayscale(0.1);">
-          <div style="font-weight: 600; color: var(--text-primary);">尚無關注科系</div>
-          <div style="font-size: 12px; opacity: 0.6; margin-top: 4px;">開始搜尋並點擊「新增」來填滿它吧！</div>
-        </div>
-      `;
+          <img src="icons/empty_folder.png">
+          <div class="empty-state-title">尚無關注科系</div>
+          <div class="empty-state-subtitle">開始搜尋並新增吧！</div>
+        </div>`;
+      isInitialRender = false;
+      lastListKeys = new Set();
       return;
     }
 
-    combinedList.forEach(item => {
-      const { uniId, uniCfg } = item;
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="dept-info">
-          <span class="uni-tag" style="background: ${uniCfg.color}15; color: ${uniCfg.color}; border: 1px solid ${uniCfg.color}30;">
-            ${uniCfg.short || uniCfg.name.substring(0, 2)}
-          </span>
-          <div class="dept-name">${cleanDeptName(item.text)}</div>
-        </div>
-        <div class="button-group">
-          <button class="btn-search" data-val="${item.val}" data-uni="${uniId}">查詢</button>
-          <button class="btn-del" data-val="${item.val}" data-uni="${uniId}">
-            <img src="icons/delete.png" alt="刪除">
-          </button>
-        </div>
-      `;
+    const newListKeys = new Set(list.map(o => o.key));
 
-      card.querySelector('.btn-search').onclick = (e) => {
-        const btn = e.target;
-        const originalText = btn.textContent;
-        btn.textContent = '查詢中';
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-        chrome.runtime.sendMessage({
-          action: "go",
-          id: item.val,
-          uni: uniId,
-          url: uniCfg.url
+    el.listContainer.innerHTML = list.map((o, i) => {
+      // 判定是否需要播放進場動畫：或者是初次開場，或者是新加入的項目
+      const shouldAnimate = isInitialRender || !lastListKeys.has(o.key);
+      const animationClass = shouldAnimate ? 'entering' : '';
+      const delay = shouldAnimate ? (isInitialRender ? (0.24 + i * 0.05) : 0) : 0;
+      const delayStyle = delay ? `style="animation-delay:${delay}s"` : '';
+
+      return `
+        <div class="card ${animationClass}" ${delayStyle} data-key="${o.key}">
+          <div class="dept-info">
+            <span class="uni-tag" style="background:${o.uni.color}15;color:${o.uni.color};border:1px solid ${o.uni.color}30">${o.uni.short || o.uni.name.slice(0, 2)}</span>
+            <div class="dept-name">${cleanName(o.text)}</div>
+          </div>
+          <div class="button-group">
+            <button class="btn-search" data-val="${o.val}" data-uni="${o.uniId}">查詢</button>
+            <button class="btn-del" data-val="${o.val}" data-uni="${o.uniId}"><img src="icons/delete.png"></button>
+          </div>
+        </div>`;
+    }).join('');
+
+    // 渲染後更新狀態
+    isInitialRender = false;
+    lastListKeys = newListKeys;
+
+    el.listContainer.querySelectorAll('.btn-search').forEach((b, i) => b.onclick = () => {
+      showLoading(true);
+      chrome.runtime.sendMessage({ action: "go", id: list[i].val, uni: list[i].uniId, url: list[i].uni.url });
+    });
+
+    el.listContainer.querySelectorAll('.btn-del').forEach((b, i) => b.onclick = (e) => {
+      const card = e.target.closest('.card');
+      // 1. 先播放離場動畫
+      card.classList.add('removing');
+
+      // 2. 動畫結束後（300ms）再真正更新數據與 UI
+      setTimeout(() => {
+        const key = `savedDepts_${list[i].uniId}`;
+        chrome.storage.local.get([key], d => {
+          const nList = (d[key] || []).filter(o => o.val !== list[i].val);
+          chrome.storage.local.set({ [key]: nList }, renderList);
         });
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.disabled = false;
-          btn.style.opacity = '1';
-        }, 1500);
-      };
-
-      card.querySelector('.btn-del').onclick = () => {
-        deleteDept(item.val, uniId);
-      };
-
-      elements.listContainer.appendChild(card);
+      }, 300);
     });
   });
-}
-
-function deleteDept(val, uniId) {
-  const key = `savedDepts_${uniId}`;
-  chrome.storage.local.get([key], (data) => {
-    const list = (data[key] || []).filter(d => d.val !== val);
-    chrome.storage.local.set({ [key]: list }, () => renderSavedList());
-  });
-}
+};
 
 init();

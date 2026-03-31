@@ -46,27 +46,28 @@ body {
 
 /* Header */
 header {
+  position: relative;
+  z-index: 10;
   margin-bottom: 22px;
-  /* 與頂部 Padding 保持絕對一致 */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  animation: slideDownIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 統一改為向上浮現 */
+  animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .version {
   font-size: 10px;
   color: var(--text-secondary);
   font-weight: 700;
-  opacity: 0.6;
-  letter-spacing: 0.08em;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 3px 8px;
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 3px 10px;
   border-radius: 20px;
-  /* 改為 Pill 藥丸造型 */
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   text-transform: uppercase;
   transition: var(--transition);
 }
@@ -105,8 +106,19 @@ header:hover .header-icon {
 
 /* University Selector */
 .uni-selector {
+  position: relative;
+  /* 基礎層級 */
+  z-index: 10;
   margin-bottom: 12px;
-  /* <--- 大學選單與下方搜尋框的距離 */
+  /* 交錯登場：第 2 階段 */
+  animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.08s;
+  transition: z-index 0.3s;
+}
+
+/* 當選單展開時，動態提升父容器層次至最高梯隊 */
+.uni-selector:has(.custom-select.active) {
+  z-index: 601;
 }
 
 /* Custom Select Wrapper */
@@ -162,13 +174,20 @@ header:hover .header-icon {
   max-height: 250px;
   overflow-y: auto;
   z-index: 200;
-  display: none;
-  animation: slideUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 修正位移方向：上縮下開 */
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+  pointer-events: none;
   transform-origin: top center;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .custom-select.active .select-options {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
 }
 
 .option {
@@ -195,11 +214,21 @@ header:hover .header-icon {
 
 /* Search Area */
 .search-section {
+  position: relative;
+  /* 基礎層級：低於大學選單，高於卡片 */
+  z-index: 5;
   display: flex;
   gap: 12px;
-  /* 校準為 4px 倍數 */
   margin-bottom: 16px;
-  /* 加大間距，更顯層次 */
+  /* 交錯登場：第 3 階段 */
+  animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.16s;
+  transition: z-index 0.3s;
+}
+
+/* 當搜尋結果展開時，動態提升父容器層級 */
+.search-section:has(.results-dropdown.active) {
+  z-index: 501;
 }
 
 .search-container {
@@ -251,14 +280,15 @@ header:hover .header-icon {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+#addBtn:hover {
+  background: #515154;
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
 #addBtn:active {
   transform: scale(0.96);
   background-color: #38383a;
-}
-
-#addBtn:hover {
-  background: #515154;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 #addBtn.success {
@@ -294,17 +324,33 @@ header:hover .header-icon {
 }
 
 @keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-0.5deg); }
-  20%, 80% { transform: translate3d(2px, 0, 0) rotate(1deg); }
-  30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-1.5deg); }
-  40%, 60% { transform: translate3d(3px, 0, 0) rotate(1.5deg); }
+
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0) rotate(-0.5deg);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0) rotate(1deg);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-3px, 0, 0) rotate(-1.5deg);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(3px, 0, 0) rotate(1.5deg);
+  }
 }
 
 /* Dropdown Results */
 .results-dropdown {
   position: absolute;
   top: calc(100% + 4px);
-  /* <--- 下拉搜尋結果與搜尋框的垂直距離 */
   left: 0;
   right: 0;
   background: var(--card-bg);
@@ -314,13 +360,20 @@ header:hover .header-icon {
   max-height: 250px;
   overflow-y: auto;
   z-index: 100;
-  display: none;
-  animation: slideUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* 修正位移方向：上縮下開 */
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+  pointer-events: none;
   transform-origin: top center;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .results-dropdown.active {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
 }
 
 .result-item {
@@ -342,51 +395,78 @@ header:hover .header-icon {
 
 /* Saved List */
 .empty-state {
-  padding: 48px 24px;
-  /* 對齊 8px 律動 */
+  padding: 42px 24px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  /* 改用深色，增加權重 */
   font-size: 14px;
   background: rgba(0, 0, 0, 0.015);
-  /* 加入微弱的戰略染色，避免單調 */
   border-radius: var(--border-radius);
-  border: 1.5px dashed rgba(0, 0, 0, 0.05);
-  /* 強化虛線細節 */
+  border: 1.5px dashed rgba(0, 0, 0, 0.1);
+  /* 虛線顏色也加深 */
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.empty-state img {
+  width: 45px;
+  height: 45px;
+  opacity: 0.8;
+  /* 近乎完全飽和 */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+  /* 增加微弱立體感 */
+  /* 漂浮動畫：增加互動溫度 */
+  animation: floatingAction 3s ease-in-out infinite;
+}
+
+.empty-state-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.empty-state-subtitle {
+  font-size: 12.5px;
+  opacity: 0.75;
+  /* 說明文字也要足夠黑 */
+  font-weight: 500;
 }
 
 #listContainer {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* <--- 收藏列表每一張卡片之間的上下距離 */
 }
 
 .card {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   padding: 16px;
-  /* <--- 科系卡片內部的四周留白 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--shadow-subtle);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
   border: 1px solid transparent;
-  animation: slideUpIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, opacity;
 }
 
-/* 交錯登場效果 (Staggered Entrance) */
-.card:nth-child(1) { animation-delay: 0.05s; }
-.card:nth-child(2) { animation-delay: 0.10s; }
-.card:nth-child(3) { animation-delay: 0.15s; }
-.card:nth-child(4) { animation-delay: 0.20s; }
-.card:nth-child(5) { animation-delay: 0.25s; }
-.card:nth-child(n+6) { animation-delay: 0.30s; }
+/* 僅在進場時套用 */
+.card.entering {
+  animation: slideUpIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 離場動畫 */
+.card.removing {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  pointer-events: none;
+  z-index: 0;
+}
 
 .card:hover {
   transform: translateY(-2px);
@@ -405,17 +485,19 @@ header:hover .header-icon {
 }
 
 .uni-tag {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 6px 5px 6px;
-  /* 視覺修正：減少上方 Padding 並微調下方，抵消中文字體重心偏下的問題 */
-  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px 4px 8px;
+  border-radius: 6px;
   white-space: nowrap;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  /* 鎖定行高，確保在標籤框內保持絕對居中 */
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  /* 增加一點色彩飽和度，讓標籤在白底上更有精神 */
+  filter: saturate(1.1);
 }
 
 .dept-name {
@@ -450,14 +532,14 @@ header:hover .header-icon {
   justify-content: center;
 }
 
-.btn-search:active {
-  transform: scale(0.96);
-  /* 點擊時的碎按壓感 */
-}
-
 .btn-search:hover {
   background-color: rgba(0, 0, 0, 0.05);
-  /* 與垃圾桶一樣的懸停背景色，但保留矩形形狀 */
+  transform: scale(1.05);
+  color: var(--accent-blue);
+}
+
+.btn-search:active {
+  transform: scale(0.95);
 }
 
 .btn-del {
@@ -465,9 +547,7 @@ header:hover .header-icon {
   border: none;
   cursor: pointer;
   width: 28px;
-  /* 與高度相同，構成正方形 */
   height: 28px;
-  /* 統一縮小到 28px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -475,20 +555,19 @@ header:hover .header-icon {
   border-radius: 8px;
 }
 
-.btn-del img {
-  width: 16px;
-  /* 圖示微縮至 16px 更顯精緻 */
-  height: 16px;
-  object-fit: contain;
+.btn-del:hover {
+  background-color: rgba(209, 0, 44, 0.08);
+  transform: scale(1.1) rotate(-8deg);
 }
 
 .btn-del:active {
-  transform: scale(0.96);
-  /* 補齊垃圾桶的點擊感 */
+  transform: scale(0.9);
 }
 
-.btn-del:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.btn-del img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 /* Scrollbar */
@@ -523,7 +602,7 @@ header:hover .header-icon {
 @keyframes slideUpIn {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: translateY(16px) scale(0.98);
   }
 
   to {
@@ -532,29 +611,168 @@ header:hover .header-icon {
   }
 }
 
-@keyframes slideDownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Footer */
 footer {
   margin-top: 16px;
-  padding-top: 12px;
+  padding: 16px 24px 8px 24px;
   border-top: 1px solid rgba(0, 0, 0, 0.04);
   text-align: center;
 }
 
-footer .copyright {
-  font-size: 10px;
+.footer-text {
+  font-size: 11px;
   color: var(--text-secondary);
-  opacity: 0.5;
+  opacity: 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  animation: fadeIn 0.8s ease-out forwards;
+  animation-delay: 0.2s;
+}
+
+.copyright {
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0;
   font-weight: 400;
+  animation: fadeIn 0.8s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loading-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.crown-loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  /* 基礎狀態：縮小且透明 */
+  transform: scale(0.94);
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loading-overlay.active .crown-loading-wrapper {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.crown-progress-container {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  will-change: transform;
+  animation: crownPulse 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+.crown-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.crown-icon.base {
+  opacity: 0.3;
+  filter: grayscale(1) blur(0.5px);
+}
+
+.crown-icon.active {
+  opacity: 1;
+  clip-path: inset(0 100% 0 0);
+  will-change: clip-path;
+}
+
+/* 載入中狀態：慢速填滿至 90% */
+.loading-overlay.active .crown-icon.active {
+  clip-path: inset(0 10% 0 0);
+  transition: clip-path 5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 成功狀態：快速衝刺至 100% */
+.loading-overlay.success .crown-icon.active {
+  clip-path: inset(0 0 0 0) !important;
+  transition: clip-path 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.loading-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+@keyframes crownPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.04);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes textBreath {
+
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+}
+
+@keyframes floatingAction {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
