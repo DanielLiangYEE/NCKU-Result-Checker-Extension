@@ -16,8 +16,10 @@
   --accent-blue: #0071E3;
   --border-radius: 12px;
   --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 1px rgba(0, 0, 0, 0.02);
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  /* 使用 Quartic Out 貝茲曲線，營造極致的「快快慢」精密感 */
+  --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 * {
@@ -41,40 +43,61 @@ body {
 
 /* Header */
 header {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
   /* 與頂部 Padding 保持絕對一致 */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  animation: slideDownIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .version {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
-  font-weight: 600;
-  opacity: 0.5;
-  letter-spacing: 0.05em;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-weight: 700;
+  opacity: 0.6;
+  letter-spacing: 0.08em;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 3px 8px;
+  border-radius: 20px;
+  /* 改為 Pill 藥丸造型 */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  text-transform: uppercase;
+  transition: var(--transition);
+}
+
+.version:hover {
+  opacity: 1;
+  background: rgba(0, 113, 227, 0.08);
+  color: var(--accent-blue);
+  border-color: rgba(0, 113, 227, 0.2);
 }
 
 h1 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   line-height: 1.2;
   /* 鎖定行高，避免造成視覺空間偏移 */
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  color: var(--text-primary);
 }
 
 .header-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: 6px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+header:hover .header-icon {
+  transform: scale(1.1) rotate(3deg);
 }
 
 /* University Selector */
@@ -137,7 +160,8 @@ h1 {
   overflow-y: auto;
   z-index: 200;
   display: none;
-  animation: fadeIn 0.2s ease-out;
+  animation: slideUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
 }
 
 .custom-select.active .select-options {
@@ -200,32 +224,34 @@ h1 {
 }
 
 #addBtn {
-  background: #2C2C2E;
+  background: #424245;
   color: white;
-  border: 1.5px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0 20px;
   border-radius: var(--border-radius);
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  /* 使用 Apple 式的高高級平滑過渡 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 使用更輕盈精確的轉場動畫 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   min-width: 72px;
   height: 40px;
-  /* 校準為 8px 倍數 */
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 #addBtn:active {
-  transform: scale(0.97);
-  /* 點擊時的物理反饋 */
+  transform: scale(0.96);
+  background-color: #38383a;
 }
 
 #addBtn:hover {
-  background: #000000;
+  background: #515154;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 #addBtn.success {
@@ -234,14 +260,18 @@ h1 {
   border-color: rgba(26, 127, 55, 0.3);
   font-size: 14px;
   font-weight: 700;
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  /* 加入驚喜感縮放彈跳 */
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* 調整為更精確的 Spring 曲線 */
 }
 
 @keyframes popIn {
   0% {
-    transform: scale(0.85);
+    transform: scale(0.8);
     opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.05);
   }
 
   100% {
@@ -251,28 +281,16 @@ h1 {
 }
 
 #addBtn.shake {
-  animation: shake 0.4s ease-in-out;
-  background: #FF3B30;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  background: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(209, 0, 44, 0.2);
 }
 
 @keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  50% {
-    transform: translateX(5px);
-  }
-
-  75% {
-    transform: translateX(-5px);
-  }
+  10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-0.5deg); }
+  20%, 80% { transform: translate3d(2px, 0, 0) rotate(1deg); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-1.5deg); }
+  40%, 60% { transform: translate3d(3px, 0, 0) rotate(1.5deg); }
 }
 
 /* Dropdown Results */
@@ -290,6 +308,8 @@ h1 {
   overflow-y: auto;
   z-index: 100;
   display: none;
+  animation: slideUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
 }
 
 .results-dropdown.active {
@@ -346,10 +366,19 @@ h1 {
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--shadow-subtle);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
   border: 1px solid transparent;
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: slideUpIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
+
+/* 交錯登場效果 (Staggered Entrance) */
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.10s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.20s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(n+6) { animation-delay: 0.30s; }
 
 .card:hover {
   transform: translateY(-2px);
@@ -478,7 +507,29 @@ h1 {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 
   to {
