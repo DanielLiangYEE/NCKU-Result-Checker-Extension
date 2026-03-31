@@ -181,6 +181,9 @@ header:hover .header-icon {
   pointer-events: none;
   transform-origin: top center;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 效能優化：佈局隔離與 GPU 加速 */
+  contain: layout style;
+  will-change: transform, opacity;
 }
 
 .custom-select.active .select-options {
@@ -367,6 +370,9 @@ header:hover .header-icon {
   pointer-events: none;
   transform-origin: top center;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 效能優化：佈局隔離與 GPU 加速 */
+  contain: layout style;
+  will-change: transform, opacity;
 }
 
 .results-dropdown.active {
@@ -439,6 +445,8 @@ header:hover .header-icon {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* 效能優化：隔離列表佈局變動，防止全頁重繪 */
+  contain: layout style;
 }
 
 .card {
@@ -651,6 +659,8 @@ footer {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 效能優化：關鍵圖層加速 */
+  will-change: opacity;
 }
 
 .loading-overlay.active {

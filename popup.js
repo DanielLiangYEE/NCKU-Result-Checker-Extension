@@ -33,10 +33,37 @@ const showBtnFeedback = (type) => {
   }
 };
 
+// Cache for pre-cleaned dept names to avoid redundant regex calls in search
+let processedDeptsMap = {};
+
+const preProcessDepts = (uniId) => {
+  if (processedDeptsMap[uniId]) return processedDeptsMap[uniId];
+  const depts = UNIVERSITY_DATA[uniId].depts;
+  // Pre-calculate clean names and lower-case search strings
+  processedDeptsMap[uniId] = depts.map(d => ({
+    ...d,
+    clean: cleanName(d.text),
+    searchStr: d.text.toLowerCase() + '|' + d.val.toLowerCase()
+  }));
+  return processedDeptsMap[uniId];
+};
+
+const debounce = (fn, delay) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
+
 // --- Core Logic ---
 const init = () => {
   chrome.storage.local.get(['lastUni'], (d) => {
-    if (d.lastUni) { currentUni = d.lastUni; updateUniUI(currentUni); }
+    if (d.lastUni) { 
+      currentUni = d.lastUni; 
+      updateUniUI(currentUni);
+      preProcessDepts(currentUni); // Pre-warm the cache
+    }
     renderList();
   });
 
@@ -53,11 +80,9 @@ const init = () => {
 
   el.uniOptions.querySelectorAll('.option').forEach(opt => opt.onclick = () => selectUni(opt.dataset.value));
 
-  el.deptSearch.oninput = (e) => {
-    const q = e.target.value.toLowerCase().trim();
-    selectedDept = null;
-    q ? showResults(q) : hideResults();
-  };
+  // 效能優化：加入 60ms 防抖
+  const debouncedSearch = debounce((q) => q ? showResults(q) : hideResults(), 60);
+  el.deptSearch.oninput = (e) => debouncedSearch(e.target.value.toLowerCase().trim());
 
   el.deptSearch.onkeydown = (e) => {
     if (e.isComposing) return;
@@ -116,6 +141,7 @@ const selectUni = (val) => {
   currentUni = val;
   updateUniUI(val);
   chrome.storage.local.set({ lastUni: val });
+  preProcessDepts(val); // 預處裡該大學的科系緩存
   el.deptSearch.value = '';
   hideResults();
   toggleUni(false);
@@ -129,20 +155,19 @@ const updateUniUI = (id) => {
 };
 
 const showResults = (q) => {
-  const depts = UNIVERSITY_DATA[currentUni].depts;
-  results = depts.filter(d => d.text.toLowerCase().includes(q) || d.val.toLowerCase().includes(q))
+  const depts = preProcessDepts(currentUni); // 使用預處裡的資料集 (O(1) 緩存)
+  results = depts.filter(d => d.searchStr.includes(q))
     .sort((a, b) => {
-      const at = cleanName(a.text).toLowerCase(), bt = cleanName(b.text).toLowerCase();
-      const as = at.startsWith(q), bs = bt.startsWith(q);
-      return as !== bs ? (as ? -1 : 1) : at.length - bt.length;
+      const as = a.clean.toLowerCase().startsWith(q), bs = b.clean.toLowerCase().startsWith(q);
+      return as !== bs ? (as ? -1 : 1) : a.clean.length - b.clean.length;
     }).slice(0, 30);
 
   if (!results.length) return hideResults();
   fIdx = -1;
-  el.searchResults.innerHTML = results.map(d => `<div class="result-item">${cleanName(d.text)}</div>`).join('');
+  el.searchResults.innerHTML = results.map(d => `<div class="result-item">${d.clean}</div>`).join('');
   el.searchResults.querySelectorAll('.result-item').forEach((item, idx) => {
     item.onmousedown = (e) => e.preventDefault();
-    item.onclick = () => { el.deptSearch.value = cleanName(results[idx].text); selectedDept = results[idx]; hideResults(); el.deptSearch.focus(); };
+    item.onclick = () => { el.deptSearch.value = results[idx].clean; selectedDept = results[idx]; hideResults(); el.deptSearch.focus(); };
   });
   el.searchResults.classList.add('active');
 };

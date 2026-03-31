@@ -127,13 +127,11 @@ async function startProcess(deptId, config, targetWindowId) {
     const hiddenWindow = await chrome.windows.create({
       url: config.url,
       focused: false,
-      width: 400,
-      height: 400,
+      state: "minimized",
       type: "normal"
     });
     
     hiddenWindowId = hiddenWindow.id;
-    chrome.windows.update(hiddenWindowId, { state: "minimized" }).catch(() => {});
     
     const tabs = await chrome.tabs.query({ windowId: hiddenWindowId });
     if (!tabs?.length) throw new Error("No tab found");
