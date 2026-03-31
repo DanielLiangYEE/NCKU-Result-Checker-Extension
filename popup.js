@@ -337,7 +337,7 @@ function renderSavedList() {
     if (combinedList.length === 0) {
       elements.listContainer.innerHTML = `
         <div class="empty-state">
-          <div style="font-size: 32px; margin-bottom: 4px; filter: grayscale(0.2);">📂</div>
+          <img src="icons/empty_folder.png" style="width: 48px; height: 48px; margin-bottom: 8px; opacity: 0.5; filter: grayscale(0.1);">
           <div style="font-weight: 600; color: var(--text-primary);">尚無關注科系</div>
           <div style="font-size: 12px; opacity: 0.6; margin-top: 4px;">開始搜尋並點擊「新增」來填滿它吧！</div>
         </div>
@@ -367,8 +367,9 @@ function renderSavedList() {
       card.querySelector('.btn-search').onclick = (e) => {
         const btn = e.target;
         const originalText = btn.textContent;
-        btn.textContent = '⏳';
+        btn.textContent = '查詢中';
         btn.disabled = true;
+        btn.style.opacity = '0.5';
         chrome.runtime.sendMessage({ 
           action: "go", 
           id: item.val, 
@@ -378,7 +379,8 @@ function renderSavedList() {
         setTimeout(() => {
           btn.textContent = originalText;
           btn.disabled = false;
-        }, 2000);
+          btn.style.opacity = '1';
+        }, 1500);
       };
 
       card.querySelector('.btn-del').onclick = () => {

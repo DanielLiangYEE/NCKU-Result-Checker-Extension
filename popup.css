@@ -6,17 +6,20 @@
 }
 
 :root {
-  --primary-color: #D1002C;
-  --bg-color: #F8F9FA;
-  /* 更具通透感的冷色調背景 */
+  /* 內斂深磚紅 (Quieter Brick Red) */
+  --primary-color: #A91E2C;
+  /* 專業級靛藍 (Sophisticated Indigo) */
+  --accent-blue: #235A9C;
+  /* 溫暖象牙白 (Warm Ivory) */
+  --bg-color: #FAF9F6;
   --card-bg: #FFFFFF;
   --text-primary: #1D1D1F;
-  --text-secondary: #6E6E73;
-  /* 依照 polish 規範優化的次要文字色 */
-  --accent-blue: #0071E3;
+  --text-secondary: #86868B;
+  /* 依照 polish 規範進一步微調 */
   --border-radius: 12px;
-  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 1px rgba(0, 0, 0, 0.02);
-  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  /* 更輕盈、分層的陰影，營造漂浮感而非重壓感 */
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
+  --shadow-hover: 0 16px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.02);
   /* 使用 Quartic Out 貝茲曲線，營造極致的「快快慢」精密感 */
   --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
@@ -30,14 +33,14 @@
 
 body {
   width: fit-content;
-  min-width: 380px;
+  min-width: 400px;
+  /* 稍微增加最小寬度，讓佈局更有呼吸感 */
   max-width: 600px;
-  /* 優先採用 Noto Sans TC (思源黑體)，提供極致的繁體中文視覺質感 */
   font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
-  padding: 18px 20px;
-  /* 從 20px 提升至 24px，增加頂部呼吸感 */
+  padding: 24px;
+  /* 統一四周內邊距為 24px (8x3) */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -77,9 +80,9 @@ header {
 
 h1 {
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
-  /* 鎖定行高，避免造成視覺空間偏移 */
+  /* 降低一點權重，使視覺更耐看 */
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
@@ -207,19 +210,23 @@ header:hover .header-icon {
 #deptSearch {
   width: 100%;
   padding: 12px 16px;
-  /* <--- 搜尋框內部的文字留白 (上下 左右) */
   border-radius: var(--border-radius);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   background: var(--card-bg);
   font-size: 14px;
   outline: none;
   transition: var(--transition);
 }
 
+#deptSearch::placeholder {
+  color: #B2B2B6;
+  font-size: 13px;
+}
+
 #deptSearch:focus {
   border-color: var(--accent-blue);
-  /* 使用帶有模糊的陰影營造「漸淡」的霧化感 */
-  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.05), 0 0 12px rgba(0, 113, 227, 0.2);
+  /* 縮小陰影擴散範圍，降低視覺負擔 */
+  box-shadow: 0 0 0 2px rgba(35, 90, 156, 0.05), 0 0 8px rgba(35, 90, 156, 0.15);
   background: #fff;
 }
 
@@ -340,13 +347,14 @@ header:hover .header-icon {
   text-align: center;
   color: var(--text-secondary);
   font-size: 14px;
-  background: var(--card-bg);
+  background: rgba(0, 0, 0, 0.015);
+  /* 加入微弱的戰略染色，避免單調 */
   border-radius: var(--border-radius);
-  border: 1.5px dashed rgba(0, 0, 0, 0.08);
+  border: 1.5px dashed rgba(0, 0, 0, 0.05);
   /* 強化虛線細節 */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -430,13 +438,11 @@ header:hover .header-icon {
   background: none;
   color: var(--accent-blue);
   border: none;
-  padding: 0 8px;
-  /* 縮小左右邊距 */
+  padding: 0 10px;
   height: 28px;
-  /* 統一縮小到 28px */
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
   display: flex;
@@ -495,12 +501,12 @@ header:hover .header-icon {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Animations */

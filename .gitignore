@@ -8,3 +8,6 @@ Thumbs.db
 
 # 如果你未來有用 VS Code 開發
 .vscode/
+# AI Agent 相關設定與 Skills
+.agent/
+.agents/
