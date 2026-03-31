@@ -13,7 +13,7 @@ const elements = {
 
 let currentUni = 'ntu';
 let selectedDept = null;
-let focusedIndex = -1; 
+let focusedIndex = -1;
 let uniFocusedIndex = -1; // 追蹤大學選單的鍵盤選取
 let currentResults = [];
 
@@ -26,16 +26,16 @@ function init() {
     }
     renderSavedList();
   });
-  
+
   const uniTrigger = elements.uniSelector.querySelector('.select-trigger');
-  
+
   // Toggle Uni Selector
   uniTrigger.onclick = () => toggleUniSelector();
 
   // University Keyboard Navigation
   uniTrigger.addEventListener('keydown', (e) => {
     const isActive = elements.uniSelector.classList.contains('active');
-    
+
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (!isActive) {
@@ -208,7 +208,7 @@ async function handleAdd() {
         selectedDept = deptToUse;
       } else {
         const depts = UNIVERSITY_DATA[currentUni].depts;
-        const filtered = depts.filter(d => 
+        const filtered = depts.filter(d =>
           d.text.toLowerCase().includes(query) || d.val.toLowerCase().includes(query)
         );
         if (filtered.length > 0) selectedDept = filtered[0];
@@ -248,15 +248,15 @@ function showBtnFeedback(type) {
 
 function cleanDeptName(text) {
   return text.replace(/^\[[^\]]+\]/, '')
-             .replace(/^[0-9A-Z]+\s*/, '')
-             .replace(/\[\w+\]$/, '');
+    .replace(/^[0-9A-Z]+\s*/, '')
+    .replace(/\[\w+\]$/, '');
 }
 
 function showResults(query) {
   const depts = UNIVERSITY_DATA[currentUni].depts;
-  
+
   // 1. 先選出所有符合條件的科系
-  const allMatches = depts.filter(d => 
+  const allMatches = depts.filter(d =>
     d.text.toLowerCase().includes(query) || d.val.toLowerCase().includes(query)
   );
 
@@ -266,7 +266,7 @@ function showResults(query) {
     const bText = cleanDeptName(b.text).toLowerCase();
     const aStarts = aText.startsWith(query);
     const bStarts = bText.startsWith(query);
-    
+
     if (aStarts && !bStarts) return -1;
     if (!aStarts && bStarts) return 1;
     return aText.length - bText.length; // 短的優先 (通常較精準)
@@ -337,7 +337,7 @@ function renderSavedList() {
     if (combinedList.length === 0) {
       elements.listContainer.innerHTML = `
         <div class="empty-state">
-          <img src="icons/empty_folder.png" style="width: 48px; height: 48px; margin-bottom: 8px; opacity: 0.5; filter: grayscale(0.1);">
+          <img src="icons/empty_folder.png" style="width: 35px; height: 35px; margin-bottom: 8px; opacity: 0.5; filter: grayscale(0.1);">
           <div style="font-weight: 600; color: var(--text-primary);">尚無關注科系</div>
           <div style="font-size: 12px; opacity: 0.6; margin-top: 4px;">開始搜尋並點擊「新增」來填滿它吧！</div>
         </div>
@@ -370,9 +370,9 @@ function renderSavedList() {
         btn.textContent = '查詢中';
         btn.disabled = true;
         btn.style.opacity = '0.5';
-        chrome.runtime.sendMessage({ 
-          action: "go", 
-          id: item.val, 
+        chrome.runtime.sendMessage({
+          action: "go",
+          id: item.val,
           uni: uniId,
           url: uniCfg.url
         });

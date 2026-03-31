@@ -52,7 +52,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   animation: slideDownIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -548,7 +548,7 @@ header:hover .header-icon {
 footer {
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
   text-align: center;
 }
 
