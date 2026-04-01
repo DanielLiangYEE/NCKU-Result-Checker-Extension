@@ -34,10 +34,7 @@
 }
 
 body {
-  width: fit-content;
-  min-width: 400px;
-  /* 稍微增加最小寬度，讓佈局更有呼吸感 */
-  max-width: 600px;
+  width: 380px;
   font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Microsoft JhengHei", sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
@@ -45,6 +42,7 @@ body {
   /* 統一四周內邊距為 24px (8x3) */
   -webkit-font-smoothing: antialiased;
 }
+
 
 /* Header */
 header {
@@ -498,10 +496,17 @@ header:hover .header-icon {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  /* <--- 標籤與科系名稱之間的距離 */
+  gap: 12px;
+  /* 增加標籤與名稱間距 */
   min-width: 0;
+  padding-right: 16px;
+  /* 為右側按鈕留出呼吸空間 */
+  position: relative;
+  /* 設定漸層遮罩，讓滾動文字在邊界自然淡出，提升精緻感 */
+  mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
 }
+
 
 .uni-tag {
   font-size: 10px;
@@ -524,8 +529,29 @@ header:hover .header-icon {
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-x: auto;
+  /* 平順捲動與隱藏滾動條 */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+  flex: 1;
+  min-width: 0;
+}
+
+/* 針對 Webkit 瀏覽器優化：懸停時才顯示極細滾動條 */
+.dept-name::-webkit-scrollbar {
+  height: 2px;
+  background: transparent;
+}
+
+.dept-name::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.card:hover .dept-name::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .button-group {
