@@ -1,6 +1,8 @@
 import { NCKU_DEPTS } from './ncku_data.js';
 import { NTU_DEPTS } from './ntu_data.js';
 import { NSYSU_DEPTS } from './nsysu_data.js';
+import { NCU_DEPTS } from './ncu_data.js';
+
 
 export const UNIVERSITY_DATA = {
   ntu: {
@@ -19,6 +21,14 @@ export const UNIVERSITY_DATA = {
     url: "https://nbk.acad.ncku.edu.tw/netcheckin/index.php?c=quall_rwd",
     depts: NCKU_DEPTS
   },
+  ncu: {
+    id: 'ncu',
+    name: '中央大學',
+    short: '中央',
+    color: '#2E7D32',
+    url: "", // NCU uses direct department URLs
+    depts: NCU_DEPTS
+  },
   nsysu: {
     id: 'nsysu',
     name: '中山大學',
@@ -28,3 +38,5 @@ export const UNIVERSITY_DATA = {
     depts: NSYSU_DEPTS
   }
 };
+
+

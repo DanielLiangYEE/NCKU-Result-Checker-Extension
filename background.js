@@ -109,17 +109,38 @@ const UNI_CONFIG = {
       };
       setTimeout(() => run(), 500);
     }
+  },
+  ncu: {
+    url: (id) => id,
+    func: null
   }
 };
+
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === "go") {
     chrome.windows.getLastFocused({ populate: false }, (win) => {
-      const config = UNI_CONFIG[msg.uni] || { url: msg.url || UNI_CONFIG.ncku.url, func: null };
+      if (msg.uni === 'ncu') {
+        chrome.tabs.create({ url: msg.id, active: true });
+        chrome.runtime.sendMessage({ action: "searching_complete" });
+        return;
+      }
+
+      const cfg = UNI_CONFIG[msg.uni];
+      const config = cfg ? {
+        url: typeof cfg.url === 'function' ? cfg.url(msg.id) : cfg.url,
+        func: cfg.func,
+        multiStep: cfg.multiStep || false
+      } : {
+        url: msg.url || UNI_CONFIG.ncku.url,
+        func: null
+      };
       startProcess(msg.id, config, win.id);
     });
   }
 });
+
+
 
 async function startProcess(deptId, config, targetWindowId) {
   let hiddenWindowId = null;
@@ -137,8 +158,9 @@ async function startProcess(deptId, config, targetWindowId) {
     if (!tabs?.length) throw new Error("No tab found");
     
     const tabId = tabs[0].id;
-    const maxSteps = config.multiStep ? 3 : 2;
+    const maxSteps = config.func ? (config.multiStep ? 3 : 2) : 1;
     let stepCount = 0;
+
 
     const handleUpdate = (tId, status) => {
       if (status !== 'complete') return;
