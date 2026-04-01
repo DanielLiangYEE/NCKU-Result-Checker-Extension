@@ -19,9 +19,11 @@
   --border-radius: 12px;
   /* 更輕盈、分層的陰影，營造漂浮感而非重壓感 */
   --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
-  --shadow-hover: 0 16px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.04);
   /* 使用 Quartic Out 貝茲曲線，營造極致的「快快慢」精密感 */
   --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+
   --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
 }
 
@@ -456,31 +458,41 @@ header:hover .header-icon {
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--shadow-subtle);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  transition: var(--transition);
+
   border: 1px solid transparent;
   position: relative;
   overflow: hidden;
   will-change: transform, opacity;
 }
 
+/* 卡片包裝層，負責進場與離場動畫，不干擾內部的 Hover Transform */
+.card-wrapper {
+  width: 100%;
+  position: relative;
+  will-change: transform, opacity;
+}
+
 /* 僅在進場時套用 */
-.card.entering {
+.card-wrapper.entering {
   animation: slideUpIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* 離場動畫 */
-.card.removing {
+.card-wrapper.removing {
   animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   pointer-events: none;
   z-index: 0;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  /* 輕微上浮感 */
+  transform: scale(1.01);
+  /* 增加縮放比例，讓「向前浮現」感更明顯 */
   box-shadow: var(--shadow-hover);
-  /* 懸停時投影加深，營造懸浮層次 */
+  /* 陰影更深且集中在正下方 */
 }
+
+
 
 .dept-info {
   flex: 1;
@@ -783,5 +795,14 @@ footer {
 
   50% {
     transform: translateY(-8px);
+  }
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

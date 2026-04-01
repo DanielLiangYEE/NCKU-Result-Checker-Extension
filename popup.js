@@ -244,16 +244,19 @@ const renderList = () => {
       const delayStyle = delay ? `style="animation-delay:${delay}s"` : '';
 
       return `
-        <div class="card ${animationClass}" ${delayStyle} data-key="${o.key}">
-          <div class="dept-info">
-            <span class="uni-tag" style="background:${o.uni.color}15;color:${o.uni.color};border:1px solid ${o.uni.color}30">${o.uni.short || o.uni.name.slice(0, 2)}</span>
-            <div class="dept-name">${cleanName(o.text)}</div>
-          </div>
-          <div class="button-group">
-            <button class="btn-search" data-val="${o.val}" data-uni="${o.uniId}">查詢</button>
-            <button class="btn-del" data-val="${o.val}" data-uni="${o.uniId}"><img src="icons/delete.png"></button>
+        <div class="card-wrapper ${animationClass}" ${delayStyle}>
+          <div class="card" data-key="${o.key}">
+            <div class="dept-info">
+              <span class="uni-tag" style="background:${o.uni.color}15;color:${o.uni.color};border:1px solid ${o.uni.color}30">${o.uni.short || o.uni.name.slice(0, 2)}</span>
+              <div class="dept-name">${cleanName(o.text)}</div>
+            </div>
+            <div class="button-group">
+              <button class="btn-search" data-val="${o.val}" data-uni="${o.uniId}">查詢</button>
+              <button class="btn-del" data-val="${o.val}" data-uni="${o.uniId}"><img src="icons/delete.png"></button>
+            </div>
           </div>
         </div>`;
+
     }).join('');
 
     // 渲染後更新狀態
@@ -266,9 +269,10 @@ const renderList = () => {
     });
 
     el.listContainer.querySelectorAll('.btn-del').forEach((b, i) => b.onclick = (e) => {
-      const card = e.target.closest('.card');
+      const wrapper = e.target.closest('.card-wrapper');
       // 1. 先播放離場動畫
-      card.classList.add('removing');
+      wrapper.classList.add('removing');
+
 
       // 2. 動畫結束後（300ms）再真正更新數據與 UI
       setTimeout(() => {
