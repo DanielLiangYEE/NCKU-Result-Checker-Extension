@@ -26,7 +26,7 @@ export const UNIVERSITY_DATA = {
     name: '中央大學',
     short: '中央',
     color: '#2E7D32',
-    url: "", // NCU uses direct department URLs
+    url: "https://cis.ncu.edu.tw/ExamRegister/", // NCU uses dynamic navigation from base URL
     depts: NCU_DEPTS
   },
   nsysu: {

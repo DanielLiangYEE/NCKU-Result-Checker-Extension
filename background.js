@@ -111,8 +111,72 @@ const UNI_CONFIG = {
     }
   },
   ncu: {
-    url: (id) => id,
-    func: null
+    url: "https://cis.ncu.edu.tw/ExamRegister/",
+    multiStep: true,
+    func: (id) => {
+      const run = (retry = 0) => {
+        if (retry > 30) return;
+
+        // Step 1: 在首頁尋找進入點按鈕
+        const btnMain = document.querySelector('input[value*="報到、放棄情形查詢"]');
+        if (btnMain) {
+          // 直接跳轉避免 window.open 彈出新視窗導致追蹤遺失
+          window.location.href = 'checkin?activityNo=189';
+          return;
+        }
+
+        // Step 2: 在表格頁面尋找科系與組別
+        const rows = [...document.querySelectorAll('tr')];
+        if (rows.length < 5) return setTimeout(() => run(retry + 1), 500);
+
+        const parts = id.split('|');
+        if (parts.length < 2) return; // 容錯處理：如果使用者還留著舊格式的 URL
+        
+        const [targetDept, targetGroup] = parts;
+        let currentDept = "";
+
+        for (const row of rows) {
+          const cells = row.cells;
+          if (!cells || cells.length < 5) continue;
+
+          let deptInRow = "";
+          let groupInRow = "";
+
+          // 邏輯說明：
+          // 1. 如果第一格有屬性 rowspan，代表是該系的第一行，包含系名與組名
+          // 2. 如果沒有 rowspan 且總儲存格數較多 (>=7)，代表是單一行系所 (rowspan=1)
+          // 3. 如果儲存格數較少 (===6)，代表是延伸行 (rowspan>1 的後續行)，僅包含組名
+          
+          if (cells[0].hasAttribute('rowspan')) {
+            currentDept = cells[0].innerText.trim();
+            deptInRow = currentDept;
+            groupInRow = cells[1].innerText.trim();
+          } else if (cells.length >= 7) {
+            currentDept = cells[0].innerText.trim();
+            deptInRow = currentDept;
+            groupInRow = cells[1].innerText.trim();
+          } else {
+            deptInRow = currentDept;
+            groupInRow = cells[0].innerText.trim();
+          }
+
+          // 清理組別中的空白或換行
+          groupInRow = groupInRow.replace(/\s/g, '');
+          const cleanTargetGroup = targetGroup.replace(/\s/g, '');
+
+          if (deptInRow.includes(targetDept) && groupInRow.includes(cleanTargetGroup)) {
+            const link = row.querySelector('a[href*="checkin_detail"]');
+            if (link) {
+              // 強制在當前分頁開啟，避免 target="_blank" 彈出新視窗
+              window.location.href = link.href;
+              return;
+            }
+          }
+        }
+        setTimeout(() => run(retry + 1), 500);
+      };
+      run();
+    }
   }
 };
 
@@ -120,12 +184,6 @@ const UNI_CONFIG = {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === "go") {
     chrome.windows.getLastFocused({ populate: false }, (win) => {
-      if (msg.uni === 'ncu') {
-        chrome.tabs.create({ url: msg.id, active: true });
-        chrome.runtime.sendMessage({ action: "searching_complete" });
-        return;
-      }
-
       const cfg = UNI_CONFIG[msg.uni];
       const config = cfg ? {
         url: typeof cfg.url === 'function' ? cfg.url(msg.id) : cfg.url,

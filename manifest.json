@@ -6,7 +6,8 @@
   "host_permissions": [
     "https://nbk.acad.ncku.edu.tw/*",
     "*://*.ntu.edu.tw/*",
-    "https://exam2-acad.nsysu.edu.tw/*"
+    "https://exam2-acad.nsysu.edu.tw/*",
+    "https://cis.ncu.edu.tw/*"
   ],
   "icons": {
     "128": "icons/icon128.png"
