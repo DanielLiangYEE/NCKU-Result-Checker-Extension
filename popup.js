@@ -19,7 +19,24 @@ let uFIdx = -1;
 let results = [];
 
 // --- Utils ---
-const cleanName = (t) => t.replace(/^\[[^\]]+\]/, '').replace(/^[0-9A-Z]+\s*/, '').replace(/\[\w+\]$/, '');
+const cleanName = (t) => {
+  let s = t
+    .replace(/^\[[^\]]+\]/, '')      // 1. 移除開頭的 [學院] 或 [類別]
+    .replace(/^[0-9A-Z]+\s*/, '')    // 2. 移除開頭的 數位/代號編號 (如 101, 411P)
+    .replace(/\[[A-Z0-9]+\]$/, '')   // 3. 移除結尾的 [編號] (如 [371])
+    .trim();
+
+  // 4. 統一組別格式：將結尾的 (一般生) 或 [乙組] 或直接接在後面的「甲組」統一為 「 [組別]」
+  // 首先匹配括號 ( ) [ ] { }
+  s = s.replace(/[\(\[{(]([^)\]}]+)[\)\]})]\s*$/, ' [$1]');
+
+  // 如果後面沒括號，但有「甲組/乙組...」等字眼，也補上括號
+  if (!s.includes(' [')) {
+    s = s.replace(/(甲組|乙組|丙組|丁組|戊組|己組|庚組|辛組|壬組|癸組)\s*$/, ' [$1]');
+  }
+
+  return s.trim();
+};
 const showLoading = (s) => el.loadingOverlay.classList.toggle('active', s);
 const showBtnFeedback = (type) => {
   const original = el.addBtn.textContent;
