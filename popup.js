@@ -155,6 +155,9 @@ const confirmUni = () => {
 };
 
 const selectUni = (val) => {
+  const opt = el.uniOptions.querySelector(`.option[data-value="${val}"]`);
+  if (!opt || opt.classList.contains('disabled')) return;
+  
   currentUni = val;
   updateUniUI(val);
   chrome.storage.local.set({ lastUni: val });
@@ -167,7 +170,15 @@ const selectUni = (val) => {
 
 const updateUniUI = (id) => {
   const cfg = UNIVERSITY_DATA[id];
-  el.currentUniName.textContent = `${cfg.name} (${id.toUpperCase()})`;
+  const opt = el.uniOptions.querySelector(`.option[data-value="${id}"]`);
+  const isClosed = opt && opt.classList.contains('disabled');
+  
+  if (isClosed) {
+    el.currentUniName.innerHTML = `${cfg.name} (${id.toUpperCase()}) <span class="closed-note trigger">系統關閉</span>`;
+  } else {
+    el.currentUniName.textContent = `${cfg.name} (${id.toUpperCase()})`;
+  }
+  
   el.uniOptions.querySelectorAll('.option').forEach(o => o.classList.toggle('selected', o.dataset.value === id));
 };
 
