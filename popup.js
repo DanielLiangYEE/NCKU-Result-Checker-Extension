@@ -73,6 +73,61 @@ const debounce = (fn, delay) => {
   };
 };
 
+// --- Remote Config ---
+const REMOTE_CONFIG_URL = 'https://raw.githubusercontent.com/DanielLiangYEE/NCKU-Result-Checker-Extension/main/remote_config.json';
+const REMOTE_CONFIG_KEY = 'remoteConfig';
+
+const applyRemoteConfig = (config) => {
+  if (!config || !config.universities) return;
+
+  el.uniOptions.querySelectorAll('.option').forEach(opt => {
+    const uniId = opt.dataset.value;
+    const uniCfg = config.universities[uniId];
+    if (!uniCfg) return;
+
+    // 取得目前是否已有 closed-note
+    const existingNote = opt.querySelector('.closed-note');
+
+    if (uniCfg.closed) {
+      opt.classList.add('disabled');
+      if (!existingNote) {
+        const note = document.createElement('span');
+        note.className = 'closed-note';
+        note.textContent = uniCfg.closedReason || '系統暫時關閉';
+        opt.appendChild(note);
+      } else {
+        existingNote.textContent = uniCfg.closedReason || '系統暫時關閉';
+      }
+    } else {
+      opt.classList.remove('disabled');
+      if (existingNote) existingNote.remove();
+    }
+  });
+
+  // 同步更新 Header 中的選擇器顯示
+  updateUniUI(currentUni);
+};
+
+const fetchRemoteConfig = async () => {
+  // 1. 先用本地快取即時套用（避免延遲）
+  chrome.storage.local.get([REMOTE_CONFIG_KEY], (d) => {
+    if (d[REMOTE_CONFIG_KEY]) applyRemoteConfig(d[REMOTE_CONFIG_KEY]);
+  });
+
+  // 2. 背景靜默拉取最新組態
+  try {
+    const res = await fetch(REMOTE_CONFIG_URL, { cache: 'no-store' });
+    if (!res.ok) return;
+    const config = await res.json();
+    // 快取到 storage 供下次離線使用
+    chrome.storage.local.set({ [REMOTE_CONFIG_KEY]: config });
+    applyRemoteConfig(config);
+  } catch (e) {
+    // 網路錯誤時靜默失敗，不影響使用者體驗
+    console.debug('[RemoteConfig] Fetch failed, using cache:', e.message);
+  }
+};
+
 // --- Core Logic ---
 const init = () => {
   chrome.storage.local.get(['lastUni'], (d) => {
@@ -83,6 +138,9 @@ const init = () => {
     }
     renderList();
   });
+
+  // 遠端組態同步：從 GitHub 拉取最新狀態
+  fetchRemoteConfig();
 
   const uniTrigger = el.uniSelector.querySelector('.select-trigger');
   uniTrigger.onclick = () => toggleUni();

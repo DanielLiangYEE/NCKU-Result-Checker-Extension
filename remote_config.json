@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "universities": {
+    "ntu":   { "closed": true,  "closedReason": "校方系統暫時關閉" },
+    "ncku":  { "closed": false },
+    "ncu":   { "closed": false },
+    "nsysu": { "closed": false }
+  },
+  "announcement": null
+}
