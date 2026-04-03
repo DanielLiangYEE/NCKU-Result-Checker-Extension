@@ -15,12 +15,22 @@
       "closed": false
     }
   },
-  "announcement": {
-    "id": "ntu_warning_2026_04",
-    "type": "warning",
-    "title": "⚠️ 台大查榜重要公告",
-    "message": "台大 115 碩士班考試查榜系統正進行資料維護，部分系所榜單可能出現延遲，請考生耐心等候。",
-    "link": "https://exam.ntu.edu.tw",
-    "dismissible": true
-  }
+  "announcements": [
+    {
+      "id": "ntu_warning_2026_04",
+      "type": "warning",
+      "title": "⚠️ 台大查榜重要公告",
+      "message": "台大 115 碩士班考試查榜系統正進行資料維護，部分系所榜單可能出現延遲，請考生耐心等候。",
+      "link": "https://exam.ntu.edu.tw",
+      "dismissible": true
+    },
+    {
+      "id": "v2_update_2026_04",
+      "type": "update",
+      "title": "🎉 v2.0 已發布！",
+      "message": "新增中央大學查榜功能，請重新下載最新版本以獲得完整體驗。",
+      "link": "https://github.com/DanielLiangYEE/NCKU-Result-Checker-Extension",
+      "dismissible": true
+    }
+  ]
 }

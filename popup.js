@@ -77,60 +77,60 @@ const debounce = (fn, delay) => {
 
 // --- Announcement Banner ---
 const DISMISSED_KEY = 'dismissedAnnouncements';
-let currentAnnouncement = null; // 記住最新的公告，讓鈴鐃按鈕可以重新顯示
+let currentAnnouncements = []; // 記住所有公告，讓鈴鐺按鈕可以重新顯示
 
-const renderAnnouncement = (ann, forceShow = false) => {
-  if (!ann || !ann.id) { el.announcementBanner.innerHTML = ''; return; }
+const renderAnnouncements = (annList, forceShow = false) => {
+  if (!annList || !annList.length) { el.announcementBanner.innerHTML = ''; return; }
 
-  // 緩存最新公告
-  currentAnnouncement = ann;
+  // 緩存最新公告列表
+  currentAnnouncements = annList;
 
-  // 檢查是否已讀（除非強制顯示）
   chrome.storage.local.get([DISMISSED_KEY], (d) => {
     const dismissed = d[DISMISSED_KEY] || [];
-    const isDismissed = dismissed.includes(ann.id);
+    const toShow = forceShow ? annList : annList.filter(a => !dismissed.includes(a.id));
+    const hasNew = annList.some(a => !dismissed.includes(a.id));
 
-    // 更新鈴鐃圖示的紅點狀態
-    if (isDismissed) {
-      el.announcementBtn.classList.remove('has-new');
-    } else {
-      el.announcementBtn.classList.add('has-new');
-    }
+    // 更新鈴鐺紅點
+    el.announcementBtn.classList.toggle('has-new', hasNew);
 
-    if (isDismissed && !forceShow) { el.announcementBanner.innerHTML = ''; return; }
+    if (!toShow.length) { el.announcementBanner.innerHTML = ''; return; }
 
-    const type = ann.type || 'info';
-    const linkBtn = ann.link
-      ? `<a class="announcement-action" href="${ann.link}" target="_blank">前往更新</a>`
-      : '';
-    const dismissBtn = ann.dismissible !== false
-      ? `<button class="announcement-dismiss" data-ann-id="${ann.id}">知道了</button>`
-      : '';
+    el.announcementBanner.innerHTML = toShow.map(ann => {
+      const type = ann.type || 'info';
+      const linkBtn = ann.link
+        ? `<a class="announcement-action" href="${ann.link}" target="_blank">前往更新</a>`
+        : '';
+      const dismissBtn = ann.dismissible !== false
+        ? `<button class="announcement-dismiss" data-ann-id="${ann.id}">知道了</button>`
+        : '';
+      return `
+        <div class="announcement" data-type="${type}" data-id="${ann.id}">
+          <div class="announcement-title">${ann.title}</div>
+          <div class="announcement-message">${ann.message}</div>
+          <div class="announcement-actions">
+            ${linkBtn}
+            ${dismissBtn}
+          </div>
+        </div>`;
+    }).join('');
 
-    el.announcementBanner.innerHTML = `
-      <div class="announcement" data-type="${type}">
-        <div class="announcement-title">${ann.title}</div>
-        <div class="announcement-message">${ann.message}</div>
-        <div class="announcement-actions">
-          ${linkBtn}
-          ${dismissBtn}
-        </div>
-      </div>`;
-
-    // 綁定關閉按鈕
-    const dismissBtnEl = el.announcementBanner.querySelector('.announcement-dismiss');
-    if (dismissBtnEl) {
-      dismissBtnEl.onclick = () => {
-        const banner = el.announcementBanner.querySelector('.announcement');
+    // 綁定每個關閉按鈕
+    el.announcementBanner.querySelectorAll('.announcement-dismiss').forEach(btn => {
+      btn.onclick = () => {
+        const annId = btn.dataset.annId;
+        const banner = btn.closest('.announcement');
         banner.classList.add('dismissing');
-        el.announcementBtn.classList.remove('has-new');
         setTimeout(() => {
-          el.announcementBanner.innerHTML = '';
-          const updated = [...dismissed, ann.id];
+          banner.remove();
+          const updated = [...dismissed, annId];
           chrome.storage.local.set({ [DISMISSED_KEY]: updated });
+          // 如果所有公告都已讀，移除紅點
+          if (annList.every(a => updated.includes(a.id))) {
+            el.announcementBtn.classList.remove('has-new');
+          }
         }, 350);
       };
-    }
+    });
   });
 };
 
@@ -165,9 +165,11 @@ const applyRemoteConfig = (config) => {
     }
   });
 
-  // 渲染遠端公告
-  if (config.announcement) {
-    renderAnnouncement(config.announcement);
+  // 渲染遠端公告（支援陣列與後向相容單筆）
+  const announcements = config.announcements
+    || (config.announcement ? [config.announcement] : []);
+  if (announcements.length) {
+    renderAnnouncements(announcements);
   }
 
   // 同步更新 Header 中的選擇器顯示
@@ -208,22 +210,18 @@ const init = () => {
   // 遠端組態同步：從 GitHub 拉取最新狀態
   fetchRemoteConfig();
 
-  // 公告鈴鐺按鈕：點擊切換顯示/隱藏最新公告
+  // 公告鈴鐺按鈕：點擊切換顯示/隱藏所有公告
   el.announcementBtn.onclick = () => {
-    if (!currentAnnouncement) return;
+    if (!currentAnnouncements.length) return;
     const isShowing = el.announcementBanner.innerHTML !== '';
     if (isShowing) {
-      const banner = el.announcementBanner.querySelector('.announcement');
-      if (banner) {
-        banner.classList.add('dismissing');
-        setTimeout(() => {
-          el.announcementBanner.innerHTML = '';
-        }, 350);
-      } else {
+      const banners = el.announcementBanner.querySelectorAll('.announcement');
+      banners.forEach(b => b.classList.add('dismissing'));
+      setTimeout(() => {
         el.announcementBanner.innerHTML = '';
-      }
+      }, 350);
     } else {
-      renderAnnouncement(currentAnnouncement, true);
+      renderAnnouncements(currentAnnouncements, true);
     }
   };
 
