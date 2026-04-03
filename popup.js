@@ -9,7 +9,9 @@ const el = {
   searchResults: document.getElementById('searchResults'),
   addBtn: document.getElementById('addBtn'),
   listContainer: document.getElementById('listContainer'),
-  loadingOverlay: document.getElementById('loadingOverlay')
+  loadingOverlay: document.getElementById('loadingOverlay'),
+  announcementBanner: document.getElementById('announcementBanner'),
+  announcementBtn: document.getElementById('announcementBtn')
 };
 
 let currentUni = 'ntu';
@@ -73,6 +75,65 @@ const debounce = (fn, delay) => {
   };
 };
 
+// --- Announcement Banner ---
+const DISMISSED_KEY = 'dismissedAnnouncements';
+let currentAnnouncement = null; // 記住最新的公告，讓鈴鐃按鈕可以重新顯示
+
+const renderAnnouncement = (ann, forceShow = false) => {
+  if (!ann || !ann.id) { el.announcementBanner.innerHTML = ''; return; }
+
+  // 緩存最新公告
+  currentAnnouncement = ann;
+
+  // 檢查是否已讀（除非強制顯示）
+  chrome.storage.local.get([DISMISSED_KEY], (d) => {
+    const dismissed = d[DISMISSED_KEY] || [];
+    const isDismissed = dismissed.includes(ann.id);
+
+    // 更新鈴鐃圖示的紅點狀態
+    if (isDismissed) {
+      el.announcementBtn.classList.remove('has-new');
+    } else {
+      el.announcementBtn.classList.add('has-new');
+    }
+
+    if (isDismissed && !forceShow) { el.announcementBanner.innerHTML = ''; return; }
+
+    const type = ann.type || 'info';
+    const linkBtn = ann.link
+      ? `<a class="announcement-action" href="${ann.link}" target="_blank">前往更新</a>`
+      : '';
+    const dismissBtn = ann.dismissible !== false
+      ? `<button class="announcement-dismiss" data-ann-id="${ann.id}">知道了</button>`
+      : '';
+
+    el.announcementBanner.innerHTML = `
+      <div class="announcement" data-type="${type}">
+        <div class="announcement-title">${ann.title}</div>
+        <div class="announcement-message">${ann.message}</div>
+        <div class="announcement-actions">
+          ${linkBtn}
+          ${dismissBtn}
+        </div>
+      </div>`;
+
+    // 綁定關閉按鈕
+    const dismissBtnEl = el.announcementBanner.querySelector('.announcement-dismiss');
+    if (dismissBtnEl) {
+      dismissBtnEl.onclick = () => {
+        const banner = el.announcementBanner.querySelector('.announcement');
+        banner.classList.add('dismissing');
+        el.announcementBtn.classList.remove('has-new');
+        setTimeout(() => {
+          el.announcementBanner.innerHTML = '';
+          const updated = [...dismissed, ann.id];
+          chrome.storage.local.set({ [DISMISSED_KEY]: updated });
+        }, 350);
+      };
+    }
+  });
+};
+
 // --- Remote Config ---
 const REMOTE_CONFIG_URL = 'https://raw.githubusercontent.com/DanielLiangYEE/NCKU-Result-Checker-Extension/main/remote_config.json';
 const REMOTE_CONFIG_KEY = 'remoteConfig';
@@ -104,6 +165,11 @@ const applyRemoteConfig = (config) => {
     }
   });
 
+  // 渲染遠端公告
+  if (config.announcement) {
+    renderAnnouncement(config.announcement);
+  }
+
   // 同步更新 Header 中的選擇器顯示
   updateUniUI(currentUni);
 };
@@ -131,8 +197,8 @@ const fetchRemoteConfig = async () => {
 // --- Core Logic ---
 const init = () => {
   chrome.storage.local.get(['lastUni'], (d) => {
-    if (d.lastUni) { 
-      currentUni = d.lastUni; 
+    if (d.lastUni) {
+      currentUni = d.lastUni;
       updateUniUI(currentUni);
       preProcessDepts(currentUni); // Pre-warm the cache
     }
@@ -141,6 +207,25 @@ const init = () => {
 
   // 遠端組態同步：從 GitHub 拉取最新狀態
   fetchRemoteConfig();
+
+  // 公告鈴鐺按鈕：點擊切換顯示/隱藏最新公告
+  el.announcementBtn.onclick = () => {
+    if (!currentAnnouncement) return;
+    const isShowing = el.announcementBanner.innerHTML !== '';
+    if (isShowing) {
+      const banner = el.announcementBanner.querySelector('.announcement');
+      if (banner) {
+        banner.classList.add('dismissing');
+        setTimeout(() => {
+          el.announcementBanner.innerHTML = '';
+        }, 350);
+      } else {
+        el.announcementBanner.innerHTML = '';
+      }
+    } else {
+      renderAnnouncement(currentAnnouncement, true);
+    }
+  };
 
   const uniTrigger = el.uniSelector.querySelector('.select-trigger');
   uniTrigger.onclick = () => toggleUni();
@@ -215,7 +300,7 @@ const confirmUni = () => {
 const selectUni = (val) => {
   const opt = el.uniOptions.querySelector(`.option[data-value="${val}"]`);
   if (!opt || opt.classList.contains('disabled')) return;
-  
+
   currentUni = val;
   updateUniUI(val);
   chrome.storage.local.set({ lastUni: val });
@@ -230,13 +315,13 @@ const updateUniUI = (id) => {
   const cfg = UNIVERSITY_DATA[id];
   const opt = el.uniOptions.querySelector(`.option[data-value="${id}"]`);
   const isClosed = opt && opt.classList.contains('disabled');
-  
+
   if (isClosed) {
     el.currentUniName.innerHTML = `${cfg.name} (${id.toUpperCase()}) <span class="closed-note trigger">系統關閉</span>`;
   } else {
     el.currentUniName.textContent = `${cfg.name} (${id.toUpperCase()})`;
   }
-  
+
   el.uniOptions.querySelectorAll('.option').forEach(o => o.classList.toggle('selected', o.dataset.value === id));
 };
 

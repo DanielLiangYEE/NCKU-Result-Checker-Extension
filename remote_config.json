@@ -6,5 +6,12 @@
     "ncu":   { "closed": false },
     "nsysu": { "closed": false }
   },
-  "announcement": null
+  "announcement": {
+    "id": "ntu_warning_2026_04",
+    "type": "warning",
+    "title": "⚠️ 台大查榜系統重要公告",
+    "message": "台大 115 碩士班考試查榜系統正進行資料維護，部分系所榜單可能出現延遲，請考生耐心等候。",
+    "link": "https://exam.ntu.edu.tw",
+    "dismissible": true
+  }
 }

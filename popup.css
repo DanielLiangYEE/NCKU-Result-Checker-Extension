@@ -17,14 +17,88 @@
   --text-secondary: #86868B;
   /* 依照 polish 規範進一步微調 */
   --border-radius: 12px;
-  /* 更輕盈、分層的陰影，營造漂浮感而非重壓感 */
+  --border-radius-sm: 8px;
+
+  /* 更輕盈、分層的陰影，營造漂浮感 */
   --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
   --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-btn-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  /* Semantic Z-Index Scale */
+  --z-index-base: 1;
+  --z-index-header: 10;
+  --z-index-card: 20;
+  --z-index-search: 30;
+  --z-index-dropdown: 100;
+  --z-index-modal: 200;
+  --z-index-overlay: 10000;
+
   /* 使用 Quartic Out 貝茲曲線，營造極致的「快快慢」精密感 */
   --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-
-
+  --transition-btn: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Arrange: Spacing Scale (Semantic) */
+  --space-xs: 0.25rem;  /* 4px */
+  --space-sm: 0.5rem;   /* 8px */
+  --space-md: 0.75rem;  /* 12px */
+  --space-lg: 1rem;     /* 16px */
+  --space-xl: 1.5rem;   /* 24px */
+
+  /* Typeset: Modular Typography Scale (1.2 Ratio) */
+  --font-caption: 0.6875rem;   /* 11px */
+  --font-secondary: 0.75rem;   /* 12px */
+  --font-body: 0.8125rem;      /* 13px */
+  --font-subhead: 0.875rem;    /* 14px */
+  --font-title: 1rem;          /* 16px */
+}
+
+/* --- Extract: Shared Interaction Patterns --- */
+
+/* 基礎按鈕語義 */
+.announcement-action,
+.announcement-dismiss,
+#addBtn,
+.btn-search,
+.btn-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-btn);
+  user-select: none;
+  font-family: inherit;
+}
+
+/* 懸浮拉升 (Lift) */
+.announcement-action:hover,
+.announcement-dismiss:hover,
+#addBtn:hover,
+.btn-search:hover,
+.btn-del:hover {
+  transform: scale(1.04);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+/* 點擊回饋 (Press) */
+.announcement-action:active,
+.announcement-dismiss:active,
+#addBtn:active,
+.btn-search:active,
+.btn-del:active {
+  transform: scale(0.96);
+}
+
+/* 懸浮容器 (Surface) */
+.select-options,
+.results-dropdown {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
+  contain: layout style;
 }
 
 * {
@@ -48,7 +122,8 @@ body {
 header {
   position: relative;
   z-index: 10;
-  margin-bottom: 22px;
+  margin-bottom: 14px;
+  /* 統一間距，與公告下邊距對稱 */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,6 +131,71 @@ header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   /* 統一改為向上浮現 */
   animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.announcement-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  /* 精確線性放大曲線 */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s linear;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.announcement-toggle:hover {
+  transform: scale(1.15);
+  color: var(--primary-color);
+}
+
+.announcement-toggle:active {
+  transform: scale(0.92);
+}
+
+/* 有未讀公告時的紅色小圓點 - 加入呼吸動畫 */
+.announcement-toggle.has-new::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: 1.5px solid var(--card-bg);
+  box-shadow: 0 0 0 1px rgba(169, 30, 44, 0.1);
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .version {
@@ -103,21 +243,185 @@ header:hover .header-icon {
   transform: scale(1.1) rotate(3deg);
 }
 
+/* Announcement Banner - Arrange & Typeset Optimized */
+#announcementBanner:empty {
+  display: none;
+}
+
+.announcement {
+  position: relative;
+  margin-bottom: 14px;
+  /* 視覺對應 Header 間距 */
+  padding: var(--space-lg);
+  border-radius: var(--border-radius);
+  /* Normalize: 側條與容器分離效果 */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-subtle);
+  overflow: hidden;
+  /* Typeset: 讀取節奏優化 */
+  animation: bannerSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.1s;
+}
+
+/* Colorize: 左側語義加重條 */
+.announcement::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+/* 類型變體：更新 (update) — 溫潤靛藍中性調 */
+.announcement[data-type="update"] {
+  background: color-mix(in srgb, var(--accent-blue) 4.5%, var(--bg-color));
+  border-color: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+  color: color-mix(in srgb, var(--accent-blue) 92%, black);
+}
+
+.announcement[data-type="update"] .announcement-title {
+  color: var(--accent-blue);
+}
+
+.announcement[data-type="update"] .announcement-action {
+  background: var(--accent-blue);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent-blue) 30%, transparent);
+}
+
+/* 類型變體：資訊 (info) — 專業靛藍隱含中性調 (不再是死灰) */
+.announcement[data-type="info"] {
+  background: color-mix(in srgb, var(--text-secondary) 5%, var(--bg-color));
+  border-color: rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
+}
+
+.announcement[data-type="info"] .announcement-title {
+  color: var(--text-primary);
+}
+
+.announcement[data-type="info"] .announcement-action {
+  background: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* 類型變體：警告 (warning) — 溫暖磚紅中性調 */
+.announcement[data-type="warning"] {
+  background: color-mix(in srgb, var(--primary-color) 4.5%, var(--bg-color));
+  border-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: color-mix(in srgb, var(--primary-color) 92%, black);
+}
+
+.announcement[data-type="warning"] .announcement-title {
+  color: var(--primary-color);
+}
+
+.announcement[data-type="warning"] .announcement-action {
+  background: var(--primary-color);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+
+.announcement-title {
+  /* Typeset: 強化標題權威感 */
+  font-size: var(--font-subhead);
+  font-weight: 800;
+  margin-bottom: var(--space-xs);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.announcement-message {
+  /* Typeset: 提升長句可讀性 */
+  font-size: var(--font-body);
+  line-height: 1.6;
+  opacity: 0.9;
+  letter-spacing: 0.01em;
+}
+
+.announcement-actions {
+  /* Arrange: 動作區塊明顯分隔 */
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.announcement-action {
+  height: 32px;
+  padding: 0 var(--space-lg);
+  border-radius: var(--border-radius-sm);
+  color: #fff;
+  font-size: var(--font-secondary);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border: none;
+}
+
+.announcement-dismiss {
+  height: 32px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  color: inherit;
+  opacity: 0.6;
+  font-size: var(--font-caption);
+  font-weight: 700;
+  padding: 0 12px;
+  border-radius: var(--border-radius-sm);
+  letter-spacing: 0.05em;
+}
+
+.announcement-dismiss:hover {
+  opacity: 0.9;
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 離場動畫 - 更平滑的收縮 */
+.announcement.dismissing {
+  animation: bannerDismiss 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bannerDismiss {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+    margin-bottom: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+  }
+}
+
 /* University Selector */
 .uni-selector {
   position: relative;
-  /* 基礎層級 */
-  z-index: 10;
-  margin-bottom: 12px;
+  z-index: var(--z-index-header);
+  margin-bottom: var(--space-md);
   /* 交錯登場：第 2 階段 */
-  animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slideUpIn 0.8s var(--transition) both;
   animation-delay: 0.08s;
   transition: z-index 0.3s;
 }
 
 /* 當選單展開時，動態提升父容器層次至最高梯隊 */
 .uni-selector:has(.custom-select.active) {
-  z-index: 601;
+  z-index: calc(var(--z-index-dropdown) + 1);
 }
 
 /* Custom Select Wrapper */
@@ -161,28 +465,30 @@ header:hover .header-icon {
   transform: rotate(180deg);
 }
 
-.select-options {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
+.select-options,
+.results-dropdown {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: var(--shadow-hover);
+  contain: layout style;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
   max-height: 250px;
   overflow-y: auto;
-  z-index: 200;
-  /* 修正位移方向：上縮下開 */
   visibility: hidden;
   opacity: 0;
   transform: translateY(-12px) scale(0.98);
   pointer-events: none;
   transform-origin: top center;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  /* 效能優化：佈局隔離與 GPU 加速 */
-  contain: layout style;
+  transition: all 0.4s var(--transition);
   will-change: transform, opacity;
+}
+
+.select-options {
+  z-index: var(--z-index-dropdown);
 }
 
 .custom-select.active .select-options {
@@ -280,19 +586,19 @@ header:hover .header-icon {
 .search-section {
   position: relative;
   /* 基礎層級：低於大學選單，高於卡片 */
-  z-index: 5;
+  z-index: var(--z-index-base);
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
   /* 交錯登場：第 3 階段 */
-  animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slideUpIn 0.8s var(--transition) both;
   animation-delay: 0.16s;
   transition: z-index 0.3s;
 }
 
 /* 當搜尋結果展開時，動態提升父容器層級 */
 .search-section:has(.results-dropdown.active) {
-  z-index: 501;
+  z-index: calc(var(--z-index-dropdown) + 1);
 }
 
 .search-container {
@@ -332,27 +638,9 @@ header:hover .header-icon {
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.02em;
-  cursor: pointer;
-  /* 使用更輕盈精確的轉場動畫 */
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
   min-width: 72px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-#addBtn:hover {
-  background: #515154;
-  transform: scale(1.04);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-#addBtn:active {
-  transform: scale(0.96);
-  background-color: #38383a;
+  box-shadow: var(--shadow-btn);
 }
 
 #addBtn.success {
@@ -411,29 +699,8 @@ header:hover .header-icon {
   }
 }
 
-/* Dropdown Results */
 .results-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--shadow-hover);
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 100;
-  /* 修正位移方向：上縮下開 */
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-12px) scale(0.98);
-  pointer-events: none;
-  transform-origin: top center;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  /* 效能優化：佈局隔離與 GPU 加速 */
-  contain: layout style;
-  will-change: transform, opacity;
+  z-index: var(--z-index-dropdown);
 }
 
 .results-dropdown.active {
@@ -664,10 +931,12 @@ header:hover .header-icon {
 
 .btn-del:hover {
   background-color: rgba(209, 0, 44, 0.08);
+  /* 疊加特定於刪除鈕的旋轉效果 */
   transform: scale(1.1) rotate(-8deg);
 }
 
 .btn-del:active {
+  /* 覆蓋通用 scale(0.96) 為更顯著的 0.9 */
   transform: scale(0.9);
 }
 
