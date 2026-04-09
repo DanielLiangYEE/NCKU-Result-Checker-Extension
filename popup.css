@@ -6,58 +6,44 @@
 }
 
 :root {
-  /* 內斂深磚紅 (Quieter Brick Red) */
   --primary-color: #A91E2C;
-  /* 專業級靛藍 (Sophisticated Indigo) */
   --accent-blue: #235A9C;
-  /* 溫暖象牙白 (Warm Ivory) */
   --bg-color: #FAF9F6;
   --card-bg: #FFFFFF;
   --text-primary: #1D1D1F;
   --text-secondary: #86868B;
-  /* 依照 polish 規範進一步微調 */
   --border-radius: 12px;
   --border-radius-sm: 8px;
 
-  /* 更輕盈、分層的陰影，營造漂浮感 */
   --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.01);
   --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.04);
   --shadow-btn: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-btn-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
 
-  /* Semantic Z-Index Scale */
   --z-index-base: 1;
   --z-index-header: 10;
-  --z-index-card: 20;
-  --z-index-search: 30;
   --z-index-dropdown: 100;
-  --z-index-modal: 200;
   --z-index-overlay: 10000;
 
-  /* 使用 Quartic Out 貝茲曲線，營造極致的「快快慢」精密感 */
   --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-btn: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Arrange: Spacing Scale (Semantic) */
-  --space-xs: 0.25rem;  /* 4px */
-  --space-sm: 0.5rem;   /* 8px */
-  --space-md: 0.75rem;  /* 12px */
-  --space-lg: 1rem;     /* 16px */
-  --space-xl: 1.5rem;   /* 24px */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
 
-  /* Typeset: Modular Typography Scale (1.2 Ratio) */
-  --font-caption: 0.6875rem;   /* 11px */
-  --font-secondary: 0.75rem;   /* 12px */
-  --font-body: 0.8125rem;      /* 13px */
-  --font-subhead: 0.875rem;    /* 14px */
-  --font-title: 1rem;          /* 16px */
+  --font-caption: 0.6875rem;
+  --font-secondary: 0.75rem;
+  --font-body: 0.8125rem;
+  --font-subhead: 0.875rem;
+  --font-title: 1rem;
 }
 
-/* --- Extract: Shared Interaction Patterns --- */
+/* --- Shared Interaction Patterns --- */
 
-/* 基礎按鈕語義 */
 .announcement-action,
 .announcement-dismiss,
 #addBtn,
@@ -70,35 +56,23 @@
   transition: var(--transition-btn);
   user-select: none;
   font-family: inherit;
+  border: none;
+  background: none;
 }
 
-/* 懸浮拉升 (Lift) */
 .announcement-action:hover,
 .announcement-dismiss:hover,
-#addBtn:hover,
-.btn-search:hover,
-.btn-del:hover {
+#addBtn:hover {
   transform: scale(1.04);
   box-shadow: var(--shadow-btn-hover);
 }
 
-/* 點擊回饋 (Press) */
 .announcement-action:active,
 .announcement-dismiss:active,
 #addBtn:active,
 .btn-search:active,
 .btn-del:active {
   transform: scale(0.96);
-}
-
-/* 懸浮容器 (Surface) */
-.select-options,
-.results-dropdown {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--shadow-hover);
-  contain: layout style;
 }
 
 * {
@@ -113,23 +87,19 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   padding: 24px;
-  /* 統一四周內邊距為 24px (8x3) */
   -webkit-font-smoothing: antialiased;
 }
-
 
 /* Header */
 header {
   position: relative;
   z-index: 10;
   margin-bottom: 14px;
-  /* 統一間距，與公告下邊距對稱 */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  /* 統一改為向上浮現 */
   animation: slideUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -151,8 +121,7 @@ header {
   background: none;
   color: var(--text-secondary);
   cursor: pointer;
-  /* 精確線性放大曲線 */
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s linear;
+  transition: transform 0.3s var(--ease-standard), color 0.2s linear;
   flex-shrink: 0;
   padding: 0;
 }
@@ -166,7 +135,6 @@ header {
   transform: scale(0.92);
 }
 
-/* 有未讀公告時的紅色小圓點 - 加入呼吸動畫 */
 .announcement-toggle.has-new::after {
   content: '';
   position: absolute;
@@ -182,20 +150,8 @@ header {
 }
 
 @keyframes pulseRed {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
 }
 
 .version {
@@ -222,7 +178,6 @@ h1 {
   font-size: 17px;
   font-weight: 700;
   line-height: 1.2;
-  /* 降低一點權重，使視覺更耐看 */
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
@@ -243,169 +198,184 @@ header:hover .header-icon {
   transform: scale(1.1) rotate(3deg);
 }
 
-/* Announcement Banner - Arrange & Typeset Optimized */
+/* Announcement Banner */
 #announcementBanner:empty {
   display: none;
 }
 
 .announcement {
   position: relative;
-  margin-bottom: 14px;
-  /* 視覺對應 Header 間距 */
-  padding: var(--space-lg);
-  border-radius: var(--border-radius);
-  /* Normalize: 側條與容器分離效果 */
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: var(--shadow-subtle);
-  overflow: hidden;
-  /* Typeset: 讀取節奏優化 */
-  animation: bannerSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.1s;
-}
-
-/* Colorize: 左側語義加重條 */
-.announcement::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: currentColor;
-  opacity: 0.8;
-}
-
-/* 類型變體：更新 (update) — 溫潤靛藍中性調 */
-.announcement[data-type="update"] {
-  background: color-mix(in srgb, var(--accent-blue) 4.5%, var(--bg-color));
-  border-color: color-mix(in srgb, var(--accent-blue) 12%, transparent);
-  color: color-mix(in srgb, var(--accent-blue) 92%, black);
-}
-
-.announcement[data-type="update"] .announcement-title {
-  color: var(--accent-blue);
-}
-
-.announcement[data-type="update"] .announcement-action {
-  background: var(--accent-blue);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent-blue) 30%, transparent);
-}
-
-/* 類型變體：資訊 (info) — 專業靛藍隱含中性調 (不再是死灰) */
-.announcement[data-type="info"] {
-  background: color-mix(in srgb, var(--text-secondary) 5%, var(--bg-color));
-  border-color: rgba(0, 0, 0, 0.08);
-  color: var(--text-primary);
-}
-
-.announcement[data-type="info"] .announcement-title {
-  color: var(--text-primary);
-}
-
-.announcement[data-type="info"] .announcement-action {
-  background: var(--text-primary);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-
-/* 類型變體：警告 (warning) — 溫暖磚紅中性調 */
-.announcement[data-type="warning"] {
-  background: color-mix(in srgb, var(--primary-color) 4.5%, var(--bg-color));
-  border-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
-  color: color-mix(in srgb, var(--primary-color) 92%, black);
-}
-
-.announcement[data-type="warning"] .announcement-title {
-  color: var(--primary-color);
-}
-
-.announcement[data-type="warning"] .announcement-action {
-  background: var(--primary-color);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-color) 30%, transparent);
-}
-
-.announcement-title {
-  /* Typeset: 強化標題權威感 */
-  font-size: var(--font-subhead);
-  font-weight: 800;
-  margin-bottom: var(--space-xs);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-
-.announcement-message {
-  /* Typeset: 提升長句可讀性 */
-  font-size: var(--font-body);
-  line-height: 1.6;
-  opacity: 0.9;
-  letter-spacing: 0.01em;
-}
-
-.announcement-actions {
-  /* Arrange: 動作區塊明顯分隔 */
+  height: 38px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-top: var(--space-lg);
-}
-
-.announcement-action {
-  height: 32px;
-  padding: 0 var(--space-lg);
-  border-radius: var(--border-radius-sm);
-  color: #fff;
-  font-size: var(--font-secondary);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  border: none;
-}
-
-.announcement-dismiss {
-  height: 32px;
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  color: inherit;
-  opacity: 0.6;
-  font-size: var(--font-caption);
-  font-weight: 700;
   padding: 0 12px;
-  border-radius: var(--border-radius-sm);
-  letter-spacing: 0.05em;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-subtle), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+  animation: bannerSlideIn 0.6s var(--transition) both;
+  background: var(--bg-color);
 }
 
-.announcement-dismiss:hover {
-  opacity: 0.9;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.announcement[data-type="update"] {
+  background: color-mix(in srgb, var(--accent-blue) 6%, var(--bg-color));
+  border-color: color-mix(in srgb, var(--accent-blue) 15%, transparent);
+  color: color-mix(in srgb, var(--accent-blue) 90%, black);
 }
 
-/* 離場動畫 - 更平滑的收縮 */
+.announcement[data-type="info"] {
+  background: color-mix(in srgb, var(--text-secondary) 8%, var(--bg-color));
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+.announcement[data-type="warning"] {
+  background: color-mix(in srgb, var(--primary-color) 6%, var(--bg-color));
+  border-color: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  color: color-mix(in srgb, var(--primary-color) 90%, black);
+}
+
+.announcement-icon-fixed {
+  flex-shrink: 0;
+  width: 24px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+}
+
+.announcement-icon-fixed::after {
+  content: '';
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 14px;
+  background: currentColor;
+  opacity: 0.12;
+}
+
+.announcement-marquee-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-left: 24px;
+  mask-image: linear-gradient(to right, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12px, black calc(100% - 12px), transparent 100%);
+}
+
+.announcement-track {
+  display: inline-block;
+  white-space: nowrap;
+  transform: translateX(var(--marquee-start, 100%));
+  animation: marquee var(--marquee-duration, 12s) linear infinite;
+  will-change: transform;
+}
+
+.announcement-text {
+  font-size: var(--font-body);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.announcement-text strong {
+  font-size: var(--font-subhead);
+  font-weight: 800;
+  color: inherit;
+}
+
+.announcement-actions-hover {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 24px;
+  background: linear-gradient(to right, transparent, var(--bg-color) 20%);
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 0.4s var(--transition), transform 0.4s var(--transition);
+  z-index: 5;
+}
+
+.announcement[data-type="update"] .announcement-actions-hover {
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--accent-blue) 6%, var(--bg-color)) 20%);
+}
+.announcement[data-type="warning"] .announcement-actions-hover {
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--primary-color) 6%, var(--bg-color)) 20%);
+}
+.announcement[data-type="info"] .announcement-actions-hover {
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--text-secondary) 8%, var(--bg-color)) 20%);
+}
+
+.announcement:hover .announcement-actions-hover {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.announcement-action-icon,
+.announcement-dismiss-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s var(--ease-standard);
+}
+
+.announcement-action-icon:hover,
+.announcement-dismiss-icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.1);
+}
+
+.announcement-action-icon:active,
+.announcement-dismiss-icon:active {
+  transform: scale(0.92);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.announcement-dismiss-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
 .announcement.dismissing {
-  animation: bannerDismiss 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bannerDismiss 0.4s var(--transition) forwards;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(var(--marquee-start, 100%)); }
+  100% { transform: translateX(var(--marquee-end, -100%)); }
 }
 
 @keyframes bannerSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-12px) scale(0.97);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes bannerDismiss {
-  to {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.96);
-    margin-bottom: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    border-width: 0;
-  }
+  to { opacity: 0; transform: translateY(-5px) scale(0.98); height: 0; margin-bottom: 0; padding: 0; border: 0; }
 }
 
 /* University Selector */
@@ -413,18 +383,15 @@ header:hover .header-icon {
   position: relative;
   z-index: var(--z-index-header);
   margin-bottom: var(--space-md);
-  /* 交錯登場：第 2 階段 */
   animation: slideUpIn 0.8s var(--transition) both;
   animation-delay: 0.08s;
   transition: z-index 0.3s;
 }
 
-/* 當選單展開時，動態提升父容器層次至最高梯隊 */
 .uni-selector:has(.custom-select.active) {
   z-index: calc(var(--z-index-dropdown) + 1);
 }
 
-/* Custom Select Wrapper */
 .custom-select {
   position: relative;
   width: 100%;
@@ -449,7 +416,6 @@ header:hover .header-icon {
 .select-trigger:hover {
   border-color: rgba(0, 0, 0, 0.2);
   background-color: #F5F5F7;
-  /* 回歸淺灰色，使其更優雅 */
 }
 
 .select-trigger .arrow {
@@ -465,19 +431,20 @@ header:hover .header-icon {
   transform: rotate(180deg);
 }
 
+/* Dropdown panels (shared) */
 .select-options,
 .results-dropdown {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--shadow-hover);
-  contain: layout style;
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
   max-height: 250px;
   overflow-y: auto;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover);
+  contain: layout style;
   visibility: hidden;
   opacity: 0;
   transform: translateY(-12px) scale(0.98);
@@ -517,13 +484,10 @@ header:hover .header-icon {
 .option.selected,
 .option.focused {
   background: rgba(0, 113, 227, 0.08);
-  /* 統一使用淡藍色調 */
   color: var(--accent-blue);
   border-bottom-color: transparent;
-  /* 隱藏底部分隔線，使懸停色塊上下邊界一致 */
 }
 
-/* 暫時關閉狀態樣式 */
 .option.disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -538,65 +502,43 @@ header:hover .header-icon {
   align-items: center;
   font-size: 10px;
   font-weight: 700;
-  color: var(--primary-color);
-  background: rgba(169, 30, 44, 0.08);
-  /* 使用主色調的淡色背景 */
+  color: #E02020;
+  background: rgba(224, 32, 32, 0.09);
   padding: 3px 10px;
   border-radius: 20px;
-  border: 1px solid rgba(169, 30, 44, 0.2);
+  border: 1px solid rgba(224, 32, 32, 0.28);
   margin-left: 8px;
   letter-spacing: 0.05em;
   white-space: nowrap;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: inset 0 0 4px rgba(169, 30, 44, 0.1), 0 1px 4px rgba(0, 0, 0, 0.05);
-  /* animation: softPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; */
-  /* 視覺上稍微上提 0.5px 實現平衡感 */
   position: relative;
   top: -0.5px;
 }
 
-/* 僅針對 Header 中的標籤進行微調，減少對視覺重心的影響 */
 .closed-note.trigger {
   padding: 2px 8px;
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-secondary);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(224, 32, 32, 0.06);
+  color: #E02020;
+  border-color: rgba(224, 32, 32, 0.15);
   font-size: 9.5px;
   font-weight: 500;
   animation: none;
-  /* Header 標籤保持靜態，不分散注意力 */
-}
-
-@keyframes softPulse {
-
-  0%,
-  100% {
-    opacity: 0.95;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.03);
-  }
 }
 
 /* Search Area */
 .search-section {
   position: relative;
-  /* 基礎層級：低於大學選單，高於卡片 */
   z-index: var(--z-index-base);
   display: flex;
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
-  /* 交錯登場：第 3 階段 */
   animation: slideUpIn 0.8s var(--transition) both;
   animation-delay: 0.16s;
   transition: z-index 0.3s;
 }
 
-/* 當搜尋結果展開時，動態提升父容器層級 */
 .search-section:has(.results-dropdown.active) {
   z-index: calc(var(--z-index-dropdown) + 1);
 }
@@ -624,7 +566,6 @@ header:hover .header-icon {
 
 #deptSearch:focus {
   border-color: var(--accent-blue);
-  /* 縮小陰影擴散範圍，降低視覺負擔 */
   box-shadow: 0 0 0 2px rgba(35, 90, 156, 0.05), 0 0 8px rgba(35, 90, 156, 0.15);
   background: #fff;
 }
@@ -650,23 +591,12 @@ header:hover .header-icon {
   font-size: 14px;
   font-weight: 700;
   animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* 調整為更精確的 Spring 曲線 */
 }
 
 @keyframes popIn {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-
-  50% {
-    transform: scale(1.05);
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 #addBtn.shake {
@@ -676,27 +606,10 @@ header:hover .header-icon {
 }
 
 @keyframes shake {
-
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0) rotate(-0.5deg);
-  }
-
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0) rotate(1deg);
-  }
-
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-3px, 0, 0) rotate(-1.5deg);
-  }
-
-  40%,
-  60% {
-    transform: translate3d(3px, 0, 0) rotate(1.5deg);
-  }
+  10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-0.5deg); }
+  20%, 80% { transform: translate3d(2px, 0, 0) rotate(1deg); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-1.5deg); }
+  40%, 60% { transform: translate3d(3px, 0, 0) rotate(1.5deg); }
 }
 
 .results-dropdown {
@@ -721,10 +634,8 @@ header:hover .header-icon {
 .result-item:hover,
 .result-item.focused {
   background: rgba(0, 113, 227, 0.08);
-  /* 統一使用淡藍色調 */
   color: var(--accent-blue);
   border-bottom-color: transparent;
-  /* 同步底部邊界漸淡效果 */
 }
 
 /* Saved List */
@@ -732,12 +643,10 @@ header:hover .header-icon {
   padding: 42px 24px;
   text-align: center;
   color: var(--text-primary);
-  /* 改用深色，增加權重 */
   font-size: 14px;
   background: rgba(0, 0, 0, 0.015);
   border-radius: var(--border-radius);
   border: 1.5px dashed rgba(0, 0, 0, 0.1);
-  /* 虛線顏色也加深 */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -749,10 +658,7 @@ header:hover .header-icon {
   width: 38px;
   height: 38px;
   opacity: 0.8;
-  /* 近乎完全飽和 */
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
-  /* 增加微弱立體感 */
-  /* 漂浮動畫：增加互動溫度 */
   animation: floatingAction 3s ease-in-out infinite;
 }
 
@@ -765,7 +671,6 @@ header:hover .header-icon {
 .empty-state-subtitle {
   font-size: 12.5px;
   opacity: 0.75;
-  /* 說明文字也要足夠黑 */
   font-weight: 400;
 }
 
@@ -773,7 +678,6 @@ header:hover .header-icon {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* 效能優化：隔離列表佈局變動，防止全頁重繪 */
   contain: layout style;
 }
 
@@ -786,56 +690,44 @@ header:hover .header-icon {
   align-items: center;
   box-shadow: var(--shadow-subtle);
   transition: var(--transition);
-
   border: 1px solid transparent;
   position: relative;
   overflow: hidden;
   will-change: transform, opacity;
 }
 
-/* 卡片包裝層，負責進場與離場動畫，不干擾內部的 Hover Transform */
 .card-wrapper {
   width: 100%;
   position: relative;
   will-change: transform, opacity;
 }
 
-/* 僅在進場時套用 */
 .card-wrapper.entering {
   animation: slideUpIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* 離場動畫 */
 .card-wrapper.removing {
-  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  animation: slideOutRight 0.3s var(--ease-standard) forwards !important;
   pointer-events: none;
   z-index: 0;
 }
 
 .card:hover {
   transform: scale(1.01);
-  /* 增加縮放比例，讓「向前浮現」感更明顯 */
   box-shadow: var(--shadow-hover);
-  /* 陰影更深且集中在正下方 */
 }
-
-
 
 .dept-info {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 12px;
-  /* 增加標籤與名稱間距 */
   min-width: 0;
   padding-right: 16px;
-  /* 為右側按鈕留出呼吸空間 */
   position: relative;
-  /* 設定漸層遮罩，讓滾動文字在邊界自然淡出，提升精緻感 */
   mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black calc(100% - 24px), transparent 100%);
 }
-
 
 .uni-tag {
   font-size: 10px;
@@ -849,7 +741,6 @@ header:hover .header-icon {
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  /* 增加一點色彩飽和度，讓標籤在白底上更有精神 */
   filter: saturate(1.1);
 }
 
@@ -859,16 +750,12 @@ header:hover .header-icon {
   color: var(--text-primary);
   white-space: nowrap;
   overflow-x: auto;
-  /* 平順捲動與隱藏滾動條 */
   scrollbar-width: none;
-  /* Firefox */
   -ms-overflow-style: none;
-  /* IE 10+ */
   flex: 1;
   min-width: 0;
 }
 
-/* 針對 Webkit 瀏覽器優化：懸停時才顯示極細滾動條 */
 .dept-name::-webkit-scrollbar {
   height: 2px;
   background: transparent;
@@ -886,30 +773,20 @@ header:hover .header-icon {
 .button-group {
   display: flex;
   gap: 12px;
-  /* <--- 「查詢」按鈕與「垃圾桶」圖示之間的距離 */
   align-items: center;
 }
 
 .btn-search {
-  background: none;
   color: var(--accent-blue);
-  border: none;
   padding: 0 10px;
   height: 28px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .btn-search:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  transform: scale(1.05);
-  color: var(--accent-blue);
+  background-color: rgba(35, 90, 156, 0.08);
 }
 
 .btn-search:active {
@@ -917,26 +794,16 @@ header:hover .header-icon {
 }
 
 .btn-del {
-  background: none;
-  border: none;
-  cursor: pointer;
   width: 28px;
   height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
   border-radius: 8px;
 }
 
 .btn-del:hover {
-  background-color: rgba(209, 0, 44, 0.08);
-  /* 疊加特定於刪除鈕的旋轉效果 */
-  transform: scale(1.1) rotate(-8deg);
+  background-color: rgba(169, 30, 44, 0.08);
 }
 
 .btn-del:active {
-  /* 覆蓋通用 scale(0.96) 為更顯著的 0.9 */
   transform: scale(0.9);
 }
 
@@ -947,61 +814,38 @@ header:hover .header-icon {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.08); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.15); }
 
 /* Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUpIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: 0; transform: translateX(30px) scale(0.95); }
+}
+
+@keyframes floatingAction {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Footer */
 footer {
   margin-top: 16px;
   padding: 16px 24px 8px 24px;
   border-top: 1px solid rgba(0, 0, 0, 0.04);
   text-align: center;
-}
-
-.footer-text {
-  font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  animation: fadeIn 0.8s ease-out forwards;
-  animation-delay: 0.2s;
 }
 
 .copyright {
@@ -1023,11 +867,10 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: var(--z-index-overlay);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  /* 效能優化：關鍵圖層加速 */
   will-change: opacity;
 }
 
@@ -1041,7 +884,6 @@ footer {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  /* 基礎狀態：縮小且透明 */
   transform: scale(0.94);
   opacity: 0;
   will-change: transform, opacity;
@@ -1064,8 +906,7 @@ footer {
 
 .crown-icon {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -1082,13 +923,11 @@ footer {
   will-change: clip-path;
 }
 
-/* 載入中狀態：慢速填滿至 90% */
 .loading-overlay.active .crown-icon.active {
   clip-path: inset(0 10% 0 0);
   transition: clip-path 5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 成功狀態：快速衝刺至 100% */
 .loading-overlay.success .crown-icon.active {
   clip-path: inset(0 0 0 0) !important;
   transition: clip-path 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -1104,58 +943,11 @@ footer {
 }
 
 @keyframes crownPulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.04);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 
-@keyframes textBreath {
-
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(0.98);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-  }
-}
-
-@keyframes floatingAction {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-/* Accessibility: Respect Reduced Motion */
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

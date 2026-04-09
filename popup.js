@@ -23,23 +23,22 @@ let results = [];
 // --- Utils ---
 const cleanName = (t) => {
   let s = t
-    .replace(/^\[[^\]]+\]/, '')      // 1. 移除開頭的 [學院] 或 [類別]
-    .replace(/^[0-9A-Z]+\s*/, '')    // 2. 移除開頭的 數位/代號編號 (如 101, 411P)
-    .replace(/\[[A-Z0-9]+\]$/, '')   // 3. 移除結尾的 [編號] (如 [371])
+    .replace(/^\[[^\]]+\]/, '')
+    .replace(/^[0-9A-Z]+\s*/, '')
+    .replace(/\[[A-Z0-9]+\]$/, '')
     .trim();
 
-  // 4. 統一組別格式：將結尾的 (一般生) 或 [乙組] 或直接接在後面的「甲組」統一為 「 [組別]」
-  // 首先匹配括號 ( ) [ ] { }
-  s = s.replace(/[\(\[{(]([^)\]}]+)[\)\]})]\s*$/, ' [$1]');
+  s = s.replace(/[\(\[{(]([^\)\\]}]+)[\)\]})]\\s*$/, ' [$1]');
 
-  // 如果後面沒括號，但有「甲組/乙組...」等字眼，也補上括號
   if (!s.includes(' [')) {
     s = s.replace(/(甲組|乙組|丙組|丁組|戊組|己組|庚組|辛組|壬組|癸組)\s*$/, ' [$1]');
   }
 
   return s.trim();
 };
+
 const showLoading = (s) => el.loadingOverlay.classList.toggle('active', s);
+
 const showBtnFeedback = (type) => {
   const original = el.addBtn.textContent;
   if (type === 'success') {
@@ -52,13 +51,11 @@ const showBtnFeedback = (type) => {
   }
 };
 
-// Cache for pre-cleaned dept names to avoid redundant regex calls in search
 let processedDeptsMap = {};
 
 const preProcessDepts = (uniId) => {
   if (processedDeptsMap[uniId]) return processedDeptsMap[uniId];
   const depts = UNIVERSITY_DATA[uniId].depts;
-  // Pre-calculate clean names and lower-case search strings
   processedDeptsMap[uniId] = depts.map(d => ({
     ...d,
     clean: cleanName(d.text),
@@ -77,12 +74,11 @@ const debounce = (fn, delay) => {
 
 // --- Announcement Banner ---
 const DISMISSED_KEY = 'dismissedAnnouncements';
-let currentAnnouncements = []; // 記住所有公告，讓鈴鐺按鈕可以重新顯示
+let currentAnnouncements = [];
 
 const renderAnnouncements = (annList, forceShow = false) => {
   if (!annList || !annList.length) { el.announcementBanner.innerHTML = ''; return; }
 
-  // 緩存最新公告列表
   currentAnnouncements = annList;
 
   chrome.storage.local.get([DISMISSED_KEY], (d) => {
@@ -90,32 +86,36 @@ const renderAnnouncements = (annList, forceShow = false) => {
     const toShow = forceShow ? annList : annList.filter(a => !dismissed.includes(a.id));
     const hasNew = annList.some(a => !dismissed.includes(a.id));
 
-    // 更新鈴鐺紅點
     el.announcementBtn.classList.toggle('has-new', hasNew);
 
     if (!toShow.length) { el.announcementBanner.innerHTML = ''; return; }
 
-    el.announcementBanner.innerHTML = toShow.map(ann => {
+    el.announcementBanner.innerHTML = toShow.map((ann, idx) => {
       const type = ann.type || 'info';
+      const icon = type === 'warning' ? '⚠️' : type === 'update' ? '🎉' : 'ℹ️';
       const linkBtn = ann.link
-        ? `<a class="announcement-action" href="${ann.link}" target="_blank">前往更新</a>`
+        ? `<a class="announcement-action-icon" href="${ann.link}" target="_blank" title="前往更新" aria-label="前往更新連結">↗</a>`
         : '';
       const dismissBtn = ann.dismissible !== false
-        ? `<button class="announcement-dismiss" data-ann-id="${ann.id}">知道了</button>`
+        ? `<button class="announcement-dismiss-icon" data-ann-id="${ann.id}" title="已讀" aria-label="關閉公告">×</button>`
         : '';
+
       return `
-        <div class="announcement" data-type="${type}" data-id="${ann.id}">
-          <div class="announcement-title">${ann.title}</div>
-          <div class="announcement-message">${ann.message}</div>
-          <div class="announcement-actions">
+        <div class="announcement" data-type="${type}" data-id="${ann.id}" style="animation-delay: ${idx * 0.12}s">
+          <div class="announcement-icon-fixed">${icon}</div>
+          <div class="announcement-marquee-viewport">
+            <div class="announcement-track">
+              <span class="announcement-text"><strong>${ann.title}</strong> ${ann.message}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+          </div>
+          <div class="announcement-actions-hover">
             ${linkBtn}
             ${dismissBtn}
           </div>
         </div>`;
     }).join('');
 
-    // 綁定每個關閉按鈕
-    el.announcementBanner.querySelectorAll('.announcement-dismiss').forEach(btn => {
+    el.announcementBanner.querySelectorAll('.announcement-dismiss-icon').forEach(btn => {
       btn.onclick = () => {
         const annId = btn.dataset.annId;
         const banner = btn.closest('.announcement');
@@ -124,29 +124,48 @@ const renderAnnouncements = (annList, forceShow = false) => {
           banner.remove();
           const updated = [...dismissed, annId];
           chrome.storage.local.set({ [DISMISSED_KEY]: updated });
-          // 如果所有公告都已讀，移除紅點
           if (annList.every(a => updated.includes(a.id))) {
             el.announcementBtn.classList.remove('has-new');
           }
         }, 350);
       };
     });
+
+    requestAnimationFrame(() => {
+      el.announcementBanner.querySelectorAll('.announcement-track').forEach(track => {
+        const viewport = track.closest('.announcement-marquee-viewport');
+        if (!viewport) return;
+
+        const vWidth = viewport.offsetWidth;
+        const tWidth = track.scrollWidth;
+        const speed = 48;
+        const duration = (vWidth + tWidth) / speed;
+
+        track.style.setProperty('--marquee-start', `${vWidth}px`);
+        track.style.setProperty('--marquee-end', `-${tWidth}px`);
+        track.style.setProperty('--marquee-duration', `${duration}s`);
+
+        track.style.animation = 'none';
+        track.offsetHeight;
+        track.style.animation = '';
+      });
+    });
   });
 };
 
 // --- Remote Config ---
+// [PUBLISH_CHECK] 打包發布前請務必切換回 GitHub 連結
 const REMOTE_CONFIG_URL = 'https://raw.githubusercontent.com/DanielLiangYEE/NCKU-Result-Checker-Extension/main/remote_config.json';
+// const REMOTE_CONFIG_URL = chrome.runtime.getURL('remote_config.json');
 const REMOTE_CONFIG_KEY = 'remoteConfig';
 
 const applyRemoteConfig = (config) => {
-  if (!config || !config.universities) return;
+  if (!config?.universities) return;
 
   el.uniOptions.querySelectorAll('.option').forEach(opt => {
-    const uniId = opt.dataset.value;
-    const uniCfg = config.universities[uniId];
+    const uniCfg = config.universities[opt.dataset.value];
     if (!uniCfg) return;
 
-    // 取得目前是否已有 closed-note
     const existingNote = opt.querySelector('.closed-note');
 
     if (uniCfg.closed) {
@@ -165,33 +184,24 @@ const applyRemoteConfig = (config) => {
     }
   });
 
-  // 渲染遠端公告（支援陣列與後向相容單筆）
-  const announcements = config.announcements
-    || (config.announcement ? [config.announcement] : []);
-  if (announcements.length) {
-    renderAnnouncements(announcements);
-  }
+  const announcements = config.announcements || (config.announcement ? [config.announcement] : []);
+  if (announcements.length) renderAnnouncements(announcements);
 
-  // 同步更新 Header 中的選擇器顯示
   updateUniUI(currentUni);
 };
 
 const fetchRemoteConfig = async () => {
-  // 1. 先用本地快取即時套用（避免延遲）
   chrome.storage.local.get([REMOTE_CONFIG_KEY], (d) => {
     if (d[REMOTE_CONFIG_KEY]) applyRemoteConfig(d[REMOTE_CONFIG_KEY]);
   });
 
-  // 2. 背景靜默拉取最新組態
   try {
-    const res = await fetch(REMOTE_CONFIG_URL, { cache: 'no-store' });
+    const res = await fetch(`${REMOTE_CONFIG_URL}?t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return;
     const config = await res.json();
-    // 快取到 storage 供下次離線使用
     chrome.storage.local.set({ [REMOTE_CONFIG_KEY]: config });
     applyRemoteConfig(config);
   } catch (e) {
-    // 網路錯誤時靜默失敗，不影響使用者體驗
     console.debug('[RemoteConfig] Fetch failed, using cache:', e.message);
   }
 };
@@ -202,24 +212,18 @@ const init = () => {
     if (d.lastUni) {
       currentUni = d.lastUni;
       updateUniUI(currentUni);
-      preProcessDepts(currentUni); // Pre-warm the cache
+      preProcessDepts(currentUni);
     }
     renderList();
   });
 
-  // 遠端組態同步：從 GitHub 拉取最新狀態
   fetchRemoteConfig();
 
-  // 公告鈴鐺按鈕：點擊切換顯示/隱藏所有公告
   el.announcementBtn.onclick = () => {
     if (!currentAnnouncements.length) return;
-    const isShowing = el.announcementBanner.innerHTML !== '';
-    if (isShowing) {
-      const banners = el.announcementBanner.querySelectorAll('.announcement');
-      banners.forEach(b => b.classList.add('dismissing'));
-      setTimeout(() => {
-        el.announcementBanner.innerHTML = '';
-      }, 350);
+    if (el.announcementBanner.innerHTML !== '') {
+      el.announcementBanner.querySelectorAll('.announcement').forEach(b => b.classList.add('dismissing'));
+      setTimeout(() => { el.announcementBanner.innerHTML = ''; }, 350);
     } else {
       renderAnnouncements(currentAnnouncements, true);
     }
@@ -238,7 +242,6 @@ const init = () => {
 
   el.uniOptions.querySelectorAll('.option').forEach(opt => opt.onclick = () => selectUni(opt.dataset.value));
 
-  // 效能優化：加入 60ms 防抖
   const debouncedSearch = debounce((q) => q ? showResults(q) : hideResults(), 60);
   el.deptSearch.oninput = (e) => debouncedSearch(e.target.value.toLowerCase().trim());
 
@@ -271,8 +274,7 @@ const toggleUni = (s) => {
   const active = typeof s === 'boolean' ? s : el.uniSelector.classList.toggle('active');
   el.uniSelector.classList.toggle('active', active);
   if (active) {
-    const opts = Array.from(el.uniOptions.querySelectorAll('.option'));
-    uFIdx = opts.findIndex(o => o.dataset.value === currentUni);
+    uFIdx = Array.from(el.uniOptions.querySelectorAll('.option')).findIndex(o => o.dataset.value === currentUni);
     updateUniFocusUI();
   } else uFIdx = -1;
 };
@@ -302,7 +304,7 @@ const selectUni = (val) => {
   currentUni = val;
   updateUniUI(val);
   chrome.storage.local.set({ lastUni: val });
-  preProcessDepts(val); // 預處裡該大學的科系緩存
+  preProcessDepts(val);
   el.deptSearch.value = '';
   hideResults();
   toggleUni(false);
@@ -312,7 +314,7 @@ const selectUni = (val) => {
 const updateUniUI = (id) => {
   const cfg = UNIVERSITY_DATA[id];
   const opt = el.uniOptions.querySelector(`.option[data-value="${id}"]`);
-  const isClosed = opt && opt.classList.contains('disabled');
+  const isClosed = opt?.classList.contains('disabled');
 
   if (isClosed) {
     el.currentUniName.innerHTML = `${cfg.name} (${id.toUpperCase()}) <span class="closed-note trigger">系統關閉</span>`;
@@ -324,7 +326,7 @@ const updateUniUI = (id) => {
 };
 
 const showResults = (q) => {
-  const depts = preProcessDepts(currentUni); // 使用預處裡的資料集 (O(1) 緩存)
+  const depts = preProcessDepts(currentUni);
   results = depts.filter(d => d.searchStr.includes(q))
     .sort((a, b) => {
       const as = a.clean.toLowerCase().startsWith(q), bs = b.clean.toLowerCase().startsWith(q);
@@ -352,7 +354,7 @@ const moveFocus = (d) => {
   });
 };
 
-const handleAdd = async () => {
+const handleAdd = () => {
   if (!selectedDept) {
     const q = el.deptSearch.value.trim();
     if (q) selectedDept = results[fIdx >= 0 ? fIdx : 0] || UNIVERSITY_DATA[currentUni].depts.find(d => cleanName(d.text).includes(q));
@@ -367,11 +369,11 @@ const handleAdd = async () => {
           renderList();
           el.deptSearch.value = '';
           selectedDept = null;
-          hideResults(); // 新增成功後自動收合列表
+          hideResults();
           showBtnFeedback('success');
         });
       } else {
-        hideResults(); // 即使重複也收合列表，並給予視覺提示
+        hideResults();
         showBtnFeedback('shake');
       }
     });
@@ -406,14 +408,11 @@ const renderList = () => {
     const newListKeys = new Set(list.map(o => o.key));
 
     el.listContainer.innerHTML = list.map((o, i) => {
-      // 判定是否需要播放進場動畫：或者是初次開場，或者是新加入的項目
       const shouldAnimate = isInitialRender || !lastListKeys.has(o.key);
-      const animationClass = shouldAnimate ? 'entering' : '';
       const delay = shouldAnimate ? (isInitialRender ? (0.24 + i * 0.05) : 0) : 0;
-      const delayStyle = delay ? `style="animation-delay:${delay}s"` : '';
 
       return `
-        <div class="card-wrapper ${animationClass}" ${delayStyle}>
+        <div class="card-wrapper ${shouldAnimate ? 'entering' : ''}" ${delay ? `style="animation-delay:${delay}s"` : ''}>
           <div class="card" data-key="${o.key}">
             <div class="dept-info">
               <span class="uni-tag" style="background:${o.uni.color}15;color:${o.uni.color};border:1px solid ${o.uni.color}30">${o.uni.short || o.uni.name.slice(0, 2)}</span>
@@ -425,10 +424,8 @@ const renderList = () => {
             </div>
           </div>
         </div>`;
-
     }).join('');
 
-    // 渲染後更新狀態
     isInitialRender = false;
     lastListKeys = newListKeys;
 
@@ -438,12 +435,7 @@ const renderList = () => {
     });
 
     el.listContainer.querySelectorAll('.btn-del').forEach((b, i) => b.onclick = (e) => {
-      const wrapper = e.target.closest('.card-wrapper');
-      // 1. 先播放離場動畫
-      wrapper.classList.add('removing');
-
-
-      // 2. 動畫結束後（300ms）再真正更新數據與 UI
+      e.target.closest('.card-wrapper').classList.add('removing');
       setTimeout(() => {
         const key = `savedDepts_${list[i].uniId}`;
         chrome.storage.local.get([key], d => {

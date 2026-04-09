@@ -2,8 +2,7 @@
   "version": "1.0",
   "universities": {
     "ntu": {
-      "closed": true,
-      "closedReason": "校方系統暫時關閉"
+      "closed": false
     },
     "ncku": {
       "closed": false
@@ -13,23 +12,15 @@
     },
     "nsysu": {
       "closed": false
+    },
+    "nccu": {
+      "closed": true,
+      "closedReason": "尚未開放"
+    },
+    "ccu": {
+      "closed": true,
+      "closedReason": "尚未開放"
     }
   },
-  "announcements": [
-    {
-      "id": "ntu_warning_2026_04",
-      "type": "warning",
-      "title": "⚠️ 台大查榜重要公告",
-      "message": "台大 115 碩士班考試查榜系統正進行資料維護，部分系所榜單可能出現延遲，請考生耐心等候。",
-      "dismissible": true
-    },
-    {
-      "id": "v2_update_2026_04",
-      "type": "update",
-      "title": "🎉 v2.0 已發布！",
-      "message": "新增中央大學查榜功能，請重新下載最新版本以獲得完整體驗。",
-      "link": "https://github.com/DanielLiangYEE/NCKU-Result-Checker-Extension",
-      "dismissible": true
-    }
-  ]
+  "announcements": []
 }

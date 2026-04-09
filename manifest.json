@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "115 碩士班考試 查榜助手",
   "version": "2.0",
-  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://nbk.acad.ncku.edu.tw/*",
     "*://*.ntu.edu.tw/*",

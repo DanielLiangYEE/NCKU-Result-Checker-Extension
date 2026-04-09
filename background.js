@@ -6,10 +6,10 @@ const UNI_CONFIG = {
         if (retry > 20) return;
         const s1 = document.querySelector('select');
         if (!s1) return setTimeout(() => run(retry + 1), 500);
-        
+
         s1.value = "2";
         s1.dispatchEvent(new Event('change', { bubbles: true }));
-        
+
         const check = setInterval(() => {
           const s2 = document.querySelectorAll('select')[1];
           if (s2 && s2.options.length > 1) {
@@ -70,8 +70,7 @@ const UNI_CONFIG = {
     multiStep: true,
     func: (id) => {
       const getDoc = () => {
-        const frames = document.querySelectorAll('frame, iframe');
-        for (let f of frames) {
+        for (let f of document.querySelectorAll('frame, iframe')) {
           try { if (f.contentDocument?.querySelector('select')) return f.contentDocument; } catch(e) {}
         }
         return document;
@@ -81,7 +80,7 @@ const UNI_CONFIG = {
         if (retry > 20) return;
         const doc = getDoc();
         const url = window.location.href;
-        
+
         if (url.includes('step1.asp')) {
           const s = doc.querySelector('select[name="exam_list"]');
           const btn = [...doc.querySelectorAll('input[type="submit"]')].find(b => b.value.includes('確定'));
@@ -117,21 +116,18 @@ const UNI_CONFIG = {
       const run = (retry = 0) => {
         if (retry > 30) return;
 
-        // Step 1: 在首頁尋找進入點按鈕
         const btnMain = document.querySelector('input[value*="報到、放棄情形查詢"]');
         if (btnMain) {
-          // 直接跳轉避免 window.open 彈出新視窗導致追蹤遺失
           window.location.href = 'checkin?activityNo=189';
           return;
         }
 
-        // Step 2: 在表格頁面尋找科系與組別
         const rows = [...document.querySelectorAll('tr')];
         if (rows.length < 5) return setTimeout(() => run(retry + 1), 500);
 
         const parts = id.split('|');
-        if (parts.length < 2) return; // 容錯處理：如果使用者還留著舊格式的 URL
-        
+        if (parts.length < 2) return;
+
         const [targetDept, targetGroup] = parts;
         let currentDept = "";
 
@@ -142,11 +138,6 @@ const UNI_CONFIG = {
           let deptInRow = "";
           let groupInRow = "";
 
-          // 邏輯說明：
-          // 1. 如果第一格有屬性 rowspan，代表是該系的第一行，包含系名與組名
-          // 2. 如果沒有 rowspan 且總儲存格數較多 (>=7)，代表是單一行系所 (rowspan=1)
-          // 3. 如果儲存格數較少 (===6)，代表是延伸行 (rowspan>1 的後續行)，僅包含組名
-          
           if (cells[0].hasAttribute('rowspan')) {
             currentDept = cells[0].innerText.trim();
             deptInRow = currentDept;
@@ -160,14 +151,12 @@ const UNI_CONFIG = {
             groupInRow = cells[0].innerText.trim();
           }
 
-          // 清理組別中的空白或換行
           groupInRow = groupInRow.replace(/\s/g, '');
           const cleanTargetGroup = targetGroup.replace(/\s/g, '');
 
           if (deptInRow.includes(targetDept) && groupInRow.includes(cleanTargetGroup)) {
             const link = row.querySelector('a[href*="checkin_detail"]');
             if (link) {
-              // 強制在當前分頁開啟，避免 target="_blank" 彈出新視窗
               window.location.href = link.href;
               return;
             }
@@ -177,9 +166,10 @@ const UNI_CONFIG = {
       };
       run();
     }
-  }
+  },
+  nccu: { url: "", func: null },
+  ccu: { url: "", func: null }
 };
-
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === "go") {
@@ -198,8 +188,6 @@ chrome.runtime.onMessage.addListener((msg) => {
   }
 });
 
-
-
 async function startProcess(deptId, config, targetWindowId) {
   let hiddenWindowId = null;
   try {
@@ -207,31 +195,30 @@ async function startProcess(deptId, config, targetWindowId) {
       url: config.url,
       focused: false,
       state: "minimized",
-      type: "normal"
+      type: "normal",
+      populate: true
     });
-    
+
     hiddenWindowId = hiddenWindow.id;
-    
-    const tabs = await chrome.tabs.query({ windowId: hiddenWindowId });
-    if (!tabs?.length) throw new Error("No tab found");
-    
-    const tabId = tabs[0].id;
+
+    if (!hiddenWindow.tabs?.length) throw new Error("No tab found");
+
+    const tabId = hiddenWindow.tabs[0].id;
     const maxSteps = config.func ? (config.multiStep ? 3 : 2) : 1;
     let stepCount = 0;
-
 
     const handleUpdate = (tId, status) => {
       if (status !== 'complete') return;
       stepCount++;
-      
+
       if (stepCount < maxSteps && config.func) {
         chrome.scripting.executeScript({
           target: { tabId: tId },
           func: config.func,
           args: [deptId]
         }).catch(err => console.error("[Injection] Error:", err));
-      } 
-      
+      }
+
       if (stepCount >= maxSteps) {
         chrome.tabs.onUpdated.removeListener(updateListener);
         chrome.tabs.move(tId, { windowId: targetWindowId, index: -1 }, () => {
@@ -243,7 +230,7 @@ async function startProcess(deptId, config, targetWindowId) {
           if (!winId) chrome.windows.getLastFocused(w => focusWin(w.id));
           else focusWin(winId);
         });
-        
+
         chrome.runtime.sendMessage({ action: "searching_complete" });
         setTimeout(() => {
           chrome.windows.get(hiddenWindowId, w => !chrome.runtime.lastError && w && chrome.windows.remove(hiddenWindowId));
@@ -254,7 +241,6 @@ async function startProcess(deptId, config, targetWindowId) {
     const updateListener = (tId, info) => tId === tabId && handleUpdate(tId, info.status);
     chrome.tabs.onUpdated.addListener(updateListener);
     chrome.tabs.get(tabId, t => t.status === 'complete' && handleUpdate(t.id, t.status));
-
   } catch (err) {
     if (hiddenWindowId) chrome.windows.remove(hiddenWindowId);
     chrome.runtime.sendMessage({ action: "searching_complete" });
