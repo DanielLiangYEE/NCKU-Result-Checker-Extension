@@ -11,3 +11,4 @@ Thumbs.db
 # AI Agent 相關設定與 Skills
 .agent/
 .agents/
+*.zip

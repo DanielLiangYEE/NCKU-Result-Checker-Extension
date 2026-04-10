@@ -195,8 +195,7 @@ async function startProcess(deptId, config, targetWindowId) {
       url: config.url,
       focused: false,
       state: "minimized",
-      type: "normal",
-      populate: true
+      type: "normal"
     });
 
     hiddenWindowId = hiddenWindow.id;
@@ -242,6 +241,7 @@ async function startProcess(deptId, config, targetWindowId) {
     chrome.tabs.onUpdated.addListener(updateListener);
     chrome.tabs.get(tabId, t => t.status === 'complete' && handleUpdate(t.id, t.status));
   } catch (err) {
+    console.error("[Background] startProcess Error:", err);
     if (hiddenWindowId) chrome.windows.remove(hiddenWindowId);
     chrome.runtime.sendMessage({ action: "searching_complete" });
   }
