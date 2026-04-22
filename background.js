@@ -168,7 +168,27 @@ const UNI_CONFIG = {
     }
   },
   nccu: { url: "", func: null },
-  ccu: { url: "", func: null }
+  ccu: {
+    url: "https://www026198.ccu.edu.tw/academic/query_reg/query_reg_1.php",
+    func: (id) => {
+      const run = (retry = 0) => {
+        if (retry > 20) return;
+        const [edept, examkind] = id.split('_');
+        const links = Array.from(document.querySelectorAll('a'));
+        const target = links.find(a => {
+          const href = a.getAttribute('href') || '';
+          return href.includes(`edept=${edept}`) && href.includes(`examkind=${examkind}`);
+        });
+
+        if (target) {
+          target.click();
+        } else {
+          setTimeout(() => run(retry + 1), 500);
+        }
+      };
+      run();
+    }
+  }
 };
 
 chrome.runtime.onMessage.addListener((msg) => {

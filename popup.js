@@ -155,8 +155,8 @@ const renderAnnouncements = (annList, forceShow = false) => {
 
 // --- Remote Config ---
 // [PUBLISH_CHECK] 打包發布前請務必切換回 GitHub 連結
-const REMOTE_CONFIG_URL = 'https://raw.githubusercontent.com/DanielLiangYEE/NCKU-Result-Checker-Extension/main/remote_config.json';
-// const REMOTE_CONFIG_URL = chrome.runtime.getURL('remote_config.json');
+// const REMOTE_CONFIG_URL = 'https://raw.githubusercontent.com/DanielLiangYEE/NCKU-Result-Checker-Extension/main/remote_config.json';
+const REMOTE_CONFIG_URL = chrome.runtime.getURL('remote_config.json');
 const REMOTE_CONFIG_KEY = 'remoteConfig';
 
 const applyRemoteConfig = (config) => {

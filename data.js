@@ -2,6 +2,7 @@ import { NCKU_DEPTS } from './ncku_data.js';
 import { NTU_DEPTS } from './ntu_data.js';
 import { NSYSU_DEPTS } from './nsysu_data.js';
 import { NCU_DEPTS } from './ncu_data.js';
+import { CCU_DEPTS } from './ccu_data.js';
 
 export const UNIVERSITY_DATA = {
   ntu: {
@@ -42,8 +43,8 @@ export const UNIVERSITY_DATA = {
   ccu: {
     name: '中正大學',
     short: '中正',
-    color: '#F57C00',
-    url: "",
-    depts: []
+    color: '#6A1B9A',
+    url: "https://www026198.ccu.edu.tw/academic/query_reg/query_reg_1.php",
+    depts: CCU_DEPTS
   }
 };

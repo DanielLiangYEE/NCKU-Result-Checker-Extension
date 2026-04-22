@@ -18,8 +18,7 @@
       "closedReason": "尚未開放"
     },
     "ccu": {
-      "closed": true,
-      "closedReason": "尚未開放"
+      "closed": false
     }
   },
   "announcements": []
